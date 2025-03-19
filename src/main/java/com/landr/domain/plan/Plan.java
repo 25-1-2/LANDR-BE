@@ -3,23 +3,32 @@ package com.landr.domain.plan;
 
 import com.landr.domain.lecture.Lecture;
 import com.landr.domain.lecture.Lesson;
-import com.landr.domain.schedule.DailySchedule;
 import com.landr.domain.user.User;
-import jakarta.persistence.*;
-
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
 @Table(name = "plans")
 public class Plan {
 
-    @Id
-    private String id;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -64,10 +73,6 @@ public class Plan {
     @Column(name = "day_of_week")
     @Enumerated(EnumType.STRING)
     private Set<DayOfWeek> studyDays = new HashSet<>();
-
-    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("date ASC")
-    private List<DailySchedule> dailySchedules = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

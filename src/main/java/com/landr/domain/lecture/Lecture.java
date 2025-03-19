@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class Lecture {
 
     @Id
-    private String id;
+    private Long id;
 
     @Column(nullable = false)
     private String title;

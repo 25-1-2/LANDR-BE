@@ -20,7 +20,7 @@ public class LessonSchedule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "daily_schedule_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
@@ -29,12 +29,6 @@ public class LessonSchedule {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lesson_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Lesson lesson;
-
-    @Column(nullable = false)
-    private String title;
-
-    @Column(name = "original_duration", nullable = false)
-    private int originalDuration;
 
     @Column(name = "adjusted_duration", nullable = false)
     private int adjustedDuration;

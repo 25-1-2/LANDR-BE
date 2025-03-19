@@ -1,1 +1,3 @@
-spring.application.name=landr
+spring:
+  profiles:
+    active: local
