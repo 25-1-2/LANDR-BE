@@ -1,15 +1,27 @@
 package com.landr.domain.lecture;
 
-import jakarta.persistence.Id;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "lessons", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"lecture_id", "sequence"})
+})
 public class Lesson {
+
     @Id
     private String id;
 
-    // 강의 순서
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lecture_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private Lecture lecture;
+
+    @Column(nullable = false)
     private int sequence;
-    // 강의 제목
+
+    @Column(nullable = false)
     private String title;
-    // 강의 시간
+
+    @Column(nullable = false)
     private int duration;
 }

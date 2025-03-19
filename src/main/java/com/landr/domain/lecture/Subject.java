@@ -1,4 +1,4 @@
-package com.landr.domain;
+package com.landr.domain.lecture;
 
 public enum Subject {
     KOR,

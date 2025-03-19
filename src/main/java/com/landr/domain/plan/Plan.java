@@ -1,52 +1,76 @@
 package com.landr.domain.plan;
 
-import jakarta.persistence.Id;
+
+import com.landr.domain.lecture.Lecture;
+import com.landr.domain.lecture.Lesson;
+import com.landr.domain.schedule.DailySchedule;
+import com.landr.domain.user.User;
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+import java.util.Set;
 
-@Document(collection = "plans")
+@Entity
+@Table(name = "plans")
 public class Plan {
+
     @Id
     private String id;
 
-    // 사용자 ID 참조
-    @Indexed
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    // 강의 ID 참조
-    @Indexed
-    private String lectureId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lecture_id", nullable = false)
+    private Lecture lecture;
 
-    // 시작 레슨 ID
-    private String startLessonId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "start_lesson_id")
+    private Lesson startLesson;
 
-    // 끝 레슨 ID
-    private String endLessonId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "end_lesson_id")
+    private Lesson endLesson;
 
-    // 계획 유형
+    @Enumerated(EnumType.STRING)
+    @Column(name = "plan_type", nullable = false)
     private PlanType planType;
 
-    // 계획 시작일 (기간으로 계획할 때)
+    @Column(name = "start_date")
     private LocalDate startDate;
 
-    // 계획 종료일 (기간으로 계획할 때)
+    @Column(name = "end_date")
     private LocalDate endDate;
 
-    // 하루 학습 시간 (시간으로 계획할 때, 분 단위)
+    @Column(name = "daily_time")
     private Integer dailyTime;
 
-    // 학습 요일 (월,화,수,목,금,토,일)
-    private List<String> studyDays;
+    @Column(name = "playback_rate", nullable = false)
+    private Float playbackRate = 1.0f;
 
-    // 배속 설정(1.0 ~ 2.0 / 0.1 단위)
-    private Float playbackRate;
-
-    // 일별 계획 목록
-    private List<DailySchedule> dailySchedules;
-
-    // 계획 생성 시간
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @ElementCollection
+    @CollectionTable(
+        name = "plan_study_days",
+        joinColumns = @JoinColumn(name = "plan_id")
+    )
+    @Column(name = "day_of_week")
+    @Enumerated(EnumType.STRING)
+    private Set<DayOfWeek> studyDays = new HashSet<>();
+
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("date ASC")
+    private List<DailySchedule> dailySchedules = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 }

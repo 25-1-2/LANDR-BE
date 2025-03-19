@@ -1,8 +1,8 @@
-package com.landr.domain;
+package com.landr.domain.lecture;
 
 public enum Platform {
     MEGA,
     DAESANG,
     ETOOS,
-    EBSI;
+    EBSI
 }
