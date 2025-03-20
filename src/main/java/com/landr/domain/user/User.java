@@ -23,12 +23,6 @@ public class User {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private Long kakaoId;
-
-    @Column(nullable = false)
-    private String provider;
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

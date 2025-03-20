@@ -38,6 +38,9 @@ public class Plan {
     @JoinColumn(name = "lecture_id", nullable = false)
     private Lecture lecture;
 
+    @Column(name = "lecture_name", nullable = false)
+    private String lectureName;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "start_lesson_id")
     private Lesson startLesson;
@@ -59,8 +62,8 @@ public class Plan {
     @Column(name = "daily_time")
     private Integer dailyTime;
 
-    @Column(name = "playback_rate", nullable = false)
-    private Float playbackRate = 1.0f;
+    @Column(name = "playback_speed", nullable = false)
+    private Float playbackSpeed = 1.0f;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

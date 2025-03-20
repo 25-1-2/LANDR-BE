@@ -38,12 +38,4 @@ public class Lecture {
     private int totalDuration;
 
     private String tag;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
 }
