@@ -18,11 +18,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
+import lombok.Getter;
 
 @Entity
 @Table(name = "daily_schedules", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"plan_id", "date"})
 })
+@Getter
 public class DailySchedule {
 
     @Id
