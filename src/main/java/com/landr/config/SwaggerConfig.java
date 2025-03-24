@@ -1,5 +1,6 @@
 package com.landr.config;
 
+import com.landr.properties.SwaggerProperties;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -7,11 +8,15 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@RequiredArgsConstructor
 public class SwaggerConfig {
+
+    private final SwaggerProperties swaggerProperties;
 
     @Bean
     public OpenAPI openAPI() {
@@ -32,11 +37,16 @@ public class SwaggerConfig {
                 .scheme("Bearer")
                 .bearerFormat("JWT"));
 
-        return new OpenAPI()
-            .addServersItem(new Server().url("http://localhost:8080"))
+        OpenAPI openAPI = new OpenAPI()
             .components(components)
             .info(info)
             .addSecurityItem(securityRequirement);
+
+        for (String url: swaggerProperties.getServers()) {
+            openAPI.addServersItem(new Server().url(url));
+        }
+
+        return openAPI;
     }
 
 }
