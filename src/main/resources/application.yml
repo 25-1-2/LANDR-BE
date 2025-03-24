@@ -1,3 +1,33 @@
 spring:
   profiles:
     active: local
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+springdoc:
+  packages-to-scan: com.landr
+  default-consumes-media-type: application/json;charset=UTF-8
+  default-produces-media-type: application/json;charset=UTF-8
+  swagger-ui:
+    path: /swagger
+    disable-swagger-default-url: true
+    display-request-duration: true
+    operations-sorter: alpha
+
+swagger:
+  servers:
+    - ${SWAGGER_SERVER_01}
+    - ${SWAGGER_SERVER_02}
