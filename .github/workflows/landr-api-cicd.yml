@@ -78,7 +78,7 @@ jobs:
             docker run -d \
               --name spring-app \
               --restart unless-stopped \
-              -p $SERVER_PORT:$SERVER_PORT \
+              -p ${{ SERVER_PORT }}: ${{ SERVER_PORT }} \
               --env-file .env \
               ${{ secrets.DOCKER_USERNAME }}/spring-app:latest
             
