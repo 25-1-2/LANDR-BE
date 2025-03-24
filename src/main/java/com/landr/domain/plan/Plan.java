@@ -77,6 +77,9 @@ public class Plan {
     @Enumerated(EnumType.STRING)
     private Set<DayOfWeek> studyDays = new HashSet<>();
 
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
