@@ -2,8 +2,9 @@ package com.landr.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -15,7 +16,7 @@ public class ApiExceptionHandler {
 
     // ApiException 클래스로 발생하는 모든 예외는 이 handleApiException 메서드가 처리
     @ExceptionHandler(value = ApiException.class)
-    public ResponseEntity<ErrorResponse> handleApiException(ApiException ex) {
+    public ResponseEntity<ExceptionResponse> handleApiException(ApiException ex) {
         // 1. 로그찍고
         log.error("", ex);
 
@@ -25,12 +26,15 @@ public class ApiExceptionHandler {
         if (errorDescription == null) {
             errorDescription = errorCode.getDescription();
         }
-        // 3. errorResponse 만들기(에러 메시지 내용과 함께)
-        ErrorResponse errorResponse = new ErrorResponse(errorCode.getErrorCode(), errorDescription);
+        // 3. ExceptionResponse 만들기(에러 메시지 내용과 함께)
+        ExceptionResponse exRes = ExceptionResponse.builder()
+            .errorCode(errorCode.getErrorCode())
+            .errorMessage(errorDescription)
+            .build();
 
         return ResponseEntity
             .status(errorCode.getHttpStatusCode())
-            .body(errorResponse);
+            .body(exRes);
     }
 
     /**
@@ -38,7 +42,7 @@ public class ApiExceptionHandler {
      * NotNull, NotBlank 등의 애노테이션 검증 실패 시 해당 예외 처리해줌
      */
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(
+    public ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(
         MethodArgumentNotValidException ex) {
         log.error("Method argument not valid exception", ex);
 
@@ -48,7 +52,7 @@ public class ApiExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(
-                ErrorResponse.builder()
+                ExceptionResponse.builder()
                     .errorCode(40000)
                     .errorMessage(errorMessage)
                     .build()
@@ -58,9 +62,9 @@ public class ApiExceptionHandler {
     // 예상치 못한 예외에 대응하기 위한 Exception handler
     // TODO : 최종 어플리케이션 배포 시, ex.getMessage() 대신 "SERVER ERROR"로 수정
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(Exception ex) {
+    public ResponseEntity<ExceptionResponse> handleException(Exception ex) {
         return ResponseEntity
-            .status(ErrorCode.SERVER_ERROR.getHttpStatusCode())
-            .body(new ErrorResponse(500, ex.getMessage()));
+            .status(ExceptionType.SERVER_ERROR.getHttpStatusCode())
+            .body(new ExceptionResponse(500, ex.getMessage()));
     }
 }
