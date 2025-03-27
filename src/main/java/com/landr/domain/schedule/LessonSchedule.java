@@ -39,4 +39,9 @@ public class LessonSchedule {
 
     @Column(nullable = false)
     private boolean completed = false;
+
+    public boolean toggleCheck() {
+        this.completed = !this.completed;
+        return this.completed;
+    }
 }
