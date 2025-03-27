@@ -1,6 +1,6 @@
 package com.landr.service.scheduler;
 
-import com.landr.domain.lecture.Lecture;
+import com.landr.domain.plan.Plan;
 import com.landr.domain.schedule.DailySchedule;
 import com.landr.domain.schedule.LessonSchedule;
 import com.landr.repository.dailyschedule.DailyScheduleRepository;
@@ -66,17 +66,17 @@ public class ScheduleService {
         List<LessonSchedule> allLessonSchedules = lessonScheduleRepository.findAllByUserIdGroupedByLecture(
             userId);
 
-        // 강의별로 그룹화
-        Map<Lecture, List<LessonSchedule>> lectureMap = allLessonSchedules.stream()
-            .collect(Collectors.groupingBy(ls -> ls.getLesson().getLecture()));
+        // plan별로 그룹화
+        Map<Plan, List<LessonSchedule>> planMap = allLessonSchedules.stream()
+            .collect(Collectors.groupingBy(ls -> ls.getDailySchedule().getPlan()));
 
         // 강의별 진행 상황 계산
         List<LectureProgressDto> lectureProgressList = new ArrayList<>();
         int totalCompletedLessons = 0;
         int totalLessons = allLessonSchedules.size();
 
-        for (Map.Entry<Lecture, List<LessonSchedule>> entry : lectureMap.entrySet()) {
-            Lecture lecture = entry.getKey();
+        for (Map.Entry<Plan, List<LessonSchedule>> entry : planMap.entrySet()) {
+            Plan plan = entry.getKey();
             List<LessonSchedule> lessonSchedules = entry.getValue();
 
             int completedLessons = (int) lessonSchedules.stream()
@@ -86,8 +86,8 @@ public class ScheduleService {
             totalCompletedLessons += completedLessons;
 
             lectureProgressList.add(LectureProgressDto.builder()
-                .lectureId(lecture.getId())
-                .lectureName(lecture.getTitle())
+                .planId(plan.getId())
+                .lectureName(plan.getLectureName())
                 .completedLessons(completedLessons)
                 .totalLessons(lessonSchedules.size())
                 .build());

@@ -22,7 +22,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.Getter;
 
+@Getter
 @Entity
 @Table(name = "plans")
 public class Plan {
@@ -83,5 +85,10 @@ public class Plan {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+    }
+
+    // 유저별 강의명 수정
+    public void editLectureName(String lectureName) {
+        this.lectureName = lectureName;
     }
 }
