@@ -1,21 +1,18 @@
 spring:
-  profiles:
-    active: local
-
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:mysql://localhost:3306/landr?useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: whdlrgus99@
 
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
-        format_sql: false
+        format_sql: true
 
 springdoc:
   packages-to-scan: com.landr
@@ -29,12 +26,8 @@ springdoc:
 
 swagger:
   servers:
-    - ${SWAGGER_SERVER_01}
-    - ${SWAGGER_SERVER_02}
+    - http://localhost:8080
+    - http://211.188.52.64:8080
 
-
-# JWT 설정
 jwt:
-  secret: ${JWT_SECRET}
-  expiration: 2592000000
-# 30 days in milliseconds (30 * 24 * 60 * 60 * 1000)
+  secret: 66cbde8eb5b37dcc345e25fb8ce2548fc78c133b1d984fd61361b300a5d75aa4
