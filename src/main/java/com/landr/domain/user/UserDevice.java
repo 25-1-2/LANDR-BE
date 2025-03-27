@@ -1,14 +1,17 @@
 package com.landr.domain.user;
 
-
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user_devices", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"user_id", "device_identifier"})
+        @UniqueConstraint(columnNames = {"user_id", "device_identifier"})
 })
+@Getter
+@Setter
 public class UserDevice {
 
     @Id

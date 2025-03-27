@@ -12,7 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/v1/users/*")
+@RequestMapping("/v1/users")
 public class UserController {
 
     @Autowired
@@ -23,7 +23,12 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-        User user = userService.findOrCreateUser(request.getEmail(), request.getName());
+        // FCM 토큰도 같이 전달
+        User user = userService.findOrCreateUser(
+                request.getEmail(),
+                request.getName(),
+                request.getFcmToken()
+        );
         String token = jwtTokenProvider.createToken(user.getId());
         return ResponseEntity.ok(new LoginResponse(token));
     }
