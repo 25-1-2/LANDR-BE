@@ -28,8 +28,8 @@ public class PlanController {
     ) {
         // TODO: 인증 로직 추가되면 삭제
         Long memberId = 1L;
-        planService.editLectureName(req, planId, memberId);
+        String editedLectureName = planService.editLectureName(req, planId, memberId);
 
-        return ResponseEntity.ok("Lecture alias edited successfully");
+        return ResponseEntity.ok(editedLectureName);
     }
 }
