@@ -19,12 +19,12 @@ public class LessonScheduleController {
 
     // TODO: Swagger에 JWT 인증 추가 & @AuthenticationPrincipal User user 추가
     @PatchMapping("/{lessonScheduleId}/check/toggle")
-    public ResponseEntity<String> toggleCheck(
+    public ResponseEntity<Boolean> toggleCheck(
         @PathVariable Long lessonScheduleId
     ) {
         Long userId = 1L;
         Boolean curStatus = lessonScheduleService.toggleCheck(lessonScheduleId, userId);
 
-        return ResponseEntity.ok("현재 체크 상태: " + curStatus);
+        return ResponseEntity.ok(curStatus);
     }
 }
