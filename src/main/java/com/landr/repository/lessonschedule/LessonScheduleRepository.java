@@ -26,10 +26,9 @@ public interface LessonScheduleRepository extends JpaRepository<LessonSchedule, 
     @Query("SELECT ls FROM LessonSchedule ls " +
         "JOIN FETCH ls.lesson l " +
         "JOIN FETCH l.lecture lec " +
-        "JOIN ls.dailySchedule ds " +
-        "JOIN ds.plan p " +
+        "JOIN FETCH ls.dailySchedule ds " +  // DailySchedule 페치 조인 추가
+        "JOIN FETCH ds.plan p " +            // Plan 페치 조인 추가
         "WHERE p.user.id = :userId " +
         "ORDER BY lec.id, l.order")
     List<LessonSchedule> findAllByUserIdGroupedByLecture(@Param("userId") Long userId);
-
 }

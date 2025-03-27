@@ -22,7 +22,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.Getter;
 
+@Getter
 @Entity
 @Table(name = "plans")
 public class Plan {
