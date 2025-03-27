@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class HomeResponseDto {
+public class HomeResponse {
     private UserProgressDto userProgress;
     private DailyScheduleWithLessonsDto todaySchedule;
 }

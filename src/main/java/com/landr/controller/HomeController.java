@@ -1,6 +1,6 @@
 package com.landr.controller;
 
-import com.landr.controller.dto.HomeResponseDto;
+import com.landr.controller.dto.HomeResponse;
 import com.landr.service.scheduler.ScheduleService;
 import com.landr.service.dto.DailyScheduleWithLessonsDto;
 import com.landr.service.dto.UserProgressDto;
@@ -24,7 +24,7 @@ public class HomeController {
     // TODO: Swagger에 JWT 인증 추가
     @Operation(summary = "홈 화면 조회", security = {})
     @GetMapping()
-    public ResponseEntity<HomeResponseDto> home() {
+    public ResponseEntity<HomeResponse> home() {
         // TODO: JWT에서 추출한 ID 넣기
         DailyScheduleWithLessonsDto dailySchedules = scheduleService.getUserDailySchedules(1L,
             LocalDate.now());
@@ -32,7 +32,7 @@ public class HomeController {
         UserProgressDto userProgress = scheduleService.getUserProgress(1L);
 
         return ResponseEntity.ok(
-            HomeResponseDto.builder()
+            HomeResponse.builder()
                 .todaySchedule(dailySchedules)
                 .userProgress(userProgress)
                 .build()
