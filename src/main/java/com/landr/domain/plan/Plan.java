@@ -86,4 +86,9 @@ public class Plan {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
+
+    // 유저별 강의명 수정
+    public void editLectureName(String lectureName) {
+        this.lectureName = lectureName;
+    }
 }
