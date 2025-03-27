@@ -1,10 +1,8 @@
 package com.landr.exception;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
 public class ApiException extends RuntimeException{
 
     private final ExceptionType exceptionType;
@@ -19,5 +17,12 @@ public class ApiException extends RuntimeException{
         super(ex);
         this.exceptionType = exceptionType;
         this.errorDescription = exceptionType.getDescription();
+    }
+
+    // 인증 관련 예외를 위한 새로운 생성자 추가
+    public ApiException(ExceptionType exceptionType, String message) {
+        super(message);
+        this.exceptionType = exceptionType;
+        this.errorDescription = message;
     }
 }

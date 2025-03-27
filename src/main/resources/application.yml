@@ -31,3 +31,13 @@ swagger:
   servers:
     - ${SWAGGER_SERVER_01}
     - ${SWAGGER_SERVER_02}
+
+# Google OAuth 설정
+google:
+  client:
+    id: ${GOOGLE_CLIENT_ID}
+
+# JWT 설정
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000  # 24시간 (밀리초 단위)
