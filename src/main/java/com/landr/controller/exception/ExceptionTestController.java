@@ -1,6 +1,6 @@
-package com.landr.controller;
+package com.landr.controller.exception;
 
-import com.landr.controller.dto.InvalidReq;
+import com.landr.controller.exception.dto.InvalidReq;
 import com.landr.exception.ApiException;
 import com.landr.exception.ExceptionType;
 import io.swagger.v3.oas.annotations.Operation;
