@@ -1,6 +1,7 @@
-package com.landr.controller;
+package com.landr.controller.plan;
 
-import com.landr.controller.dto.EditLectureNameRequest;
+import com.landr.controller.plan.dto.EditLectureNameRequest;
+import com.landr.controller.plan.dto.EditLectureNameResponse;
 import com.landr.service.plan.PlanService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,7 +23,7 @@ public class PlanController {
 
     // TODO: @AuthenticationPrincipal User user 추가
     @PatchMapping("/{planId}/lecture-name")
-    public ResponseEntity<String> editLectureName(
+    public ResponseEntity<EditLectureNameResponse> editLectureName(
         @PathVariable Long planId,
         @RequestBody @Valid EditLectureNameRequest req
     ) {
@@ -30,6 +31,11 @@ public class PlanController {
         Long memberId = 1L;
         String editedLectureName = planService.editLectureName(req, planId, memberId);
 
-        return ResponseEntity.ok(editedLectureName);
+        return ResponseEntity.ok(
+            EditLectureNameResponse.builder()
+                .planId(planId)
+                .lectureAlias(editedLectureName)
+                .build()
+        );
     }
 }

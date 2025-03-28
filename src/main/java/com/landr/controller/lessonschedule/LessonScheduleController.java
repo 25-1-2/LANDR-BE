@@ -1,5 +1,6 @@
-package com.landr.controller;
+package com.landr.controller.lessonschedule;
 
+import com.landr.controller.lessonschedule.dto.ToggleCheckResponse;
 import com.landr.service.lessonschedule.LessonScheduleService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -19,12 +20,17 @@ public class LessonScheduleController {
 
     // TODO: Swagger에 JWT 인증 추가 & @AuthenticationPrincipal User user 추가
     @PatchMapping("/{lessonScheduleId}/check/toggle")
-    public ResponseEntity<Boolean> toggleCheck(
+    public ResponseEntity<ToggleCheckResponse> toggleCheck(
         @PathVariable Long lessonScheduleId
     ) {
         Long userId = 1L;
         Boolean curStatus = lessonScheduleService.toggleCheck(lessonScheduleId, userId);
 
-        return ResponseEntity.ok(curStatus);
+        return ResponseEntity.ok(
+            ToggleCheckResponse.builder()
+                .lessonScheduleId(lessonScheduleId)
+                .checked(curStatus)
+                .build()
+        );
     }
 }

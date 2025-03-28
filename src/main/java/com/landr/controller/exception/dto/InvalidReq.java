@@ -1,4 +1,4 @@
-package com.landr.controller.dto;
+package com.landr.controller.exception.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;

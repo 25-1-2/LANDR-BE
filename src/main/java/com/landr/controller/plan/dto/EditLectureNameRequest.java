@@ -1,4 +1,4 @@
-package com.landr.controller.dto;
+package com.landr.controller.plan.dto;
 
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 

@@ -1,4 +1,4 @@
-package com.landr.controller.dto;
+package com.landr.controller.home.dto;
 
 import com.landr.service.dto.DailyScheduleWithLessonsDto;
 import com.landr.service.dto.UserProgressDto;
