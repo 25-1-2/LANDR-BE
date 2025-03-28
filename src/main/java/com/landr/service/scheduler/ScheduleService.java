@@ -79,6 +79,10 @@ public class ScheduleService {
             Plan plan = entry.getKey();
             List<LessonSchedule> lessonSchedules = entry.getValue();
 
+            // 첫 번째 LessonSchedule에서 Lecture 정보를 가져옴
+            String lectureTitle = lessonSchedules.isEmpty() ? "" :
+                lessonSchedules.get(0).getLesson().getLecture().getTitle();
+
             int completedLessons = (int) lessonSchedules.stream()
                 .filter(LessonSchedule::isCompleted)
                 .count();
@@ -87,7 +91,8 @@ public class ScheduleService {
 
             lectureProgressList.add(LectureProgressDto.builder()
                 .planId(plan.getId())
-                .lectureName(plan.getLectureName())
+                .lectureAlias(plan.getLectureName())
+                .lectureName(lectureTitle)
                 .completedLessons(completedLessons)
                 .totalLessons(lessonSchedules.size())
                 .build());
