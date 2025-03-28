@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class LectureProgressDto {
 
     private Long planId;
+    private String lectureAlias;
     private String lectureName;
     private int completedLessons;
     private int totalLessons;
