@@ -1,6 +1,6 @@
 package com.landr.service.plan;
 
-import com.landr.controller.dto.EditLectureNameRequest;
+import com.landr.controller.plan.dto.EditLectureNameRequest;
 import com.landr.domain.plan.Plan;
 import com.landr.exception.ApiException;
 import com.landr.exception.ExceptionType;
@@ -16,11 +16,13 @@ public class PlanService {
     private final PlanRepository planRepository;
 
     @Transactional
-    public void editLectureName(EditLectureNameRequest req, Long planId, Long memberId) {
+    public String editLectureName(EditLectureNameRequest req, Long planId, Long memberId) {
         Plan plan = planRepository.findByIdAndUserId(planId, memberId)
             .orElseThrow(() -> new ApiException(
                 ExceptionType.PLAN_NOT_FOUND));
 
         plan.editLectureName(req.getLectureAlias());
+
+        return plan.getLectureName();
     }
 }

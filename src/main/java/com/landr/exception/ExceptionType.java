@@ -24,8 +24,13 @@ public enum ExceptionType {
     USER_NOT_FOUND(40423, HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다."),
     DUPLICATE_USER(40924, HttpStatus.CONFLICT, "이미 존재하는 사용자입니다."),
 
-    SERVER_ERROR(50001, HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 서버 에러 입니다.");
+    SERVER_ERROR(50001, HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 서버 에러 입니다."),
 
+
+
+    // LessonSchedule 관련 (에러 번호 3로 시작)
+    LESSON_SCHEDULE_NOT_FOUND(40431, HttpStatus.NOT_FOUND, "해당 강의 스케줄을 찾을 수 없습니다.")
+    ;
     private final int errorCode;    // errorCode는 5자리로 구성(3자리는 Http status code + 2자리 에러번호)
     private final HttpStatus httpStatusCode;
     private final String description;

@@ -1,6 +1,6 @@
-package com.landr.controller;
+package com.landr.controller.home;
 
-import com.landr.controller.dto.HomeResponse;
+import com.landr.controller.home.dto.HomeResponse;
 import com.landr.service.scheduler.ScheduleService;
 import com.landr.service.dto.DailyScheduleWithLessonsDto;
 import com.landr.service.dto.UserProgressDto;
