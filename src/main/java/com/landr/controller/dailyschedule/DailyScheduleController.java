@@ -31,6 +31,7 @@ public class DailyScheduleController {
         DailyScheduleWithLessonsDto dailySchedules = scheduleService.getUserDailySchedules(userId,
             date);
 
+        if (dailySchedules == null) dailySchedules = new DailyScheduleWithLessonsDto();
         return ResponseEntity.ok(dailySchedules);
     }
 }
