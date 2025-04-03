@@ -18,8 +18,15 @@ public enum ExceptionType {
 
 
     // LessonSchedule 관련 (에러 번호 3로 시작)
-    LESSON_SCHEDULE_NOT_FOUND(40431, HttpStatus.NOT_FOUND, "해당 강의 스케줄을 찾을 수 없습니다.")
-    ;
+    LESSON_SCHEDULE_NOT_FOUND(40431, HttpStatus.NOT_FOUND, "해당 강의 스케줄을 찾을 수 없습니다."),
+
+    // Lecture 관련 (에러 번호 5로 시작)
+    LECTURE_NOT_FOUND(40451, HttpStatus.NOT_FOUND, "해당 Lecture를 찾을 수 없습니다."),
+
+    // Lesson 관련 (에러 번호 6로 시작)
+    LESSON_NOT_FOUND(40461, HttpStatus.NOT_FOUND, "해당 Lesson을 찾을 수 없습니다."),;
+
+
     private final int errorCode;    // errorCode는 5자리로 구성(3자리는 Http status code + 2자리 에러번호)
     private final HttpStatus httpStatusCode;
     private final String description;

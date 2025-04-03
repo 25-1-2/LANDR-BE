@@ -1,7 +1,9 @@
 package com.landr.controller.plan;
 
+import com.landr.controller.plan.dto.CreatePlanRequest;
 import com.landr.controller.plan.dto.EditLectureNameRequest;
 import com.landr.controller.plan.dto.EditLectureNameResponse;
+import com.landr.domain.plan.Plan;
 import com.landr.service.plan.PlanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -10,6 +12,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,5 +42,14 @@ public class PlanController {
                 .lectureAlias(editedLectureName)
                 .build()
         );
+    }
+
+    @Operation(summary = "계획 생성", security = {})
+    @PostMapping
+    public ResponseEntity<Plan> createPlan(
+        @RequestBody @Valid CreatePlanRequest request
+    ) {
+
+//        return ResponseEntity.ok(planService.createPlan(request, ));
     }
 }
