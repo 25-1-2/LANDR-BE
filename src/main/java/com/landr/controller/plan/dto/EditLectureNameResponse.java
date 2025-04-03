@@ -1,4 +1,4 @@
-package com.landr.service.dto;
+package com.landr.controller.plan.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,11 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LectureProgressDto {
+public class EditLectureNameResponse {
 
     private Long planId;
     private String lectureAlias;
-    private String lectureName;
-    private int completedLessons;
-    private int totalLessons;
 }

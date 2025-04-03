@@ -7,7 +7,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.landr.controller.dto.EditLectureNameRequest;
+import com.landr.controller.plan.dto.EditLectureNameRequest;
 import com.landr.domain.plan.Plan;
 import com.landr.exception.ApiException;
 import com.landr.exception.ExceptionType;
