@@ -3,6 +3,7 @@ package com.landr.controller.plan;
 import com.landr.controller.plan.dto.EditLectureNameRequest;
 import com.landr.controller.plan.dto.EditLectureNameResponse;
 import com.landr.service.plan.PlanService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,7 @@ public class PlanController {
     private final PlanService planService;
 
     // TODO: @AuthenticationPrincipal User user 추가
+    @Operation(summary = "강의 별명 수정", security = {})
     @PatchMapping("/{planId}/lecture-name")
     public ResponseEntity<EditLectureNameResponse> editLectureName(
         @PathVariable Long planId,
