@@ -32,6 +32,7 @@ public class UserController {
     public ResponseEntity<UserResponse> getUserProfile(
             @AuthenticationPrincipal User user
     ) {
+
         return ResponseEntity.ok(new UserResponse(user.getId(), user.getEmail(), user.getName()));
     }
 }
