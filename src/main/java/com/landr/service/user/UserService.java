@@ -2,17 +2,15 @@ package com.landr.service.user;
 
 import com.landr.domain.user.User;
 import com.landr.repository.user.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
+@AllArgsConstructor
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public User findOrCreateUser(String email, String name) {
@@ -23,9 +21,5 @@ public class UserService {
                     newUser.setName(name);
                     return userRepository.save(newUser);
                 });
-    }
-
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
     }
 }

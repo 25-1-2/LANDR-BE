@@ -1,4 +1,4 @@
-package com.landr.controller.dto;
+package com.landr.controller.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
