@@ -18,7 +18,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -92,6 +91,7 @@ public class Plan {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        isDeleted = false;
     }
 
     // 유저별 강의명 수정

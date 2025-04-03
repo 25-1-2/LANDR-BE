@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 public class CreatePlanRequest {
 
     @NotNull(message = "강의 ID는 필수입니다")
-    @Schema(description = "강의 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "강의 ID", example = "1001", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long lectureId;
 
     @NotNull(message = "계획 타입은 필수입니다")

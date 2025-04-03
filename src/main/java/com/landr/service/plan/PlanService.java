@@ -47,6 +47,7 @@ public class PlanService {
 
         Plan newPlan = Plan.builder()
             .lecture(lecture)
+            .lectureName(lecture.getTitle())
             .user(user)
             .planType(req.getPlanType())
             .startLesson(startLesson)
@@ -55,6 +56,7 @@ public class PlanService {
             .dailyTime(req.getDailyTime())
             .startDate(req.getStartDate())
             .endDate(req.getEndDate())
+            .playbackSpeed(req.getPlaybackSpeed())
             .build();
 
         return planRepository.save(newPlan);
