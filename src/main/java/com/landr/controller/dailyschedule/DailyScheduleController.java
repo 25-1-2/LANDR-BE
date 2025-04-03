@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,10 +22,10 @@ public class DailyScheduleController {
     private final ScheduleService scheduleService;
 
     // TODO: Swagger에 JWT 인증 추가
-    @Operation(summary = "일일 스케줄 조회", security = {})
+    @Operation(summary = "일일 스케줄 조회", description = "날짜 형식은 2025-04-01 형식을 지켜야 합니다.",security = {})
     @GetMapping
     public ResponseEntity<DailyScheduleWithLessonsDto> getDailySchedule(
-        @RequestParam LocalDate date) {
+        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
         // TODO: SecurityContext에서 User 추출
         Long userId = 1L;
         DailyScheduleWithLessonsDto dailySchedules = scheduleService.getUserDailySchedules(userId,
