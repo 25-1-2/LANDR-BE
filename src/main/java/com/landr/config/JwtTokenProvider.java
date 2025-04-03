@@ -1,5 +1,6 @@
 package com.landr.config;
 
+import com.landr.exception.ApiException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.Base64;
 import java.util.Date;
+
+import static com.landr.exception.ExceptionType.INVALID_TOKEN;
 
 @Component
 public class JwtTokenProvider {
@@ -54,7 +57,7 @@ public class JwtTokenProvider {
             Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            return false;
+            throw new ApiException(INVALID_TOKEN);
         }
     }
 }
