@@ -31,3 +31,10 @@ swagger:
   servers:
     - ${SWAGGER_SERVER_01}
     - ${SWAGGER_SERVER_02}
+
+
+# JWT 설정
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 2592000000
+# 30 days in milliseconds (30 * 24 * 60 * 60 * 1000)
