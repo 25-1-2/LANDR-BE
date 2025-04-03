@@ -63,6 +63,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(authentication); //Spring Security의 보안 컨텍스트에 방금 생성한 인증 토큰을 설정. 이렇게 설정하면 해당 스레드의 나머지 요청 처리 과정에서 이 사용자를 인증된 사용자로 인식
             logger.debug("사용자 인증 성공: name={}, email={}", user.getName(), user.getEmail());
+
+            filterChain.doFilter(request, response); // 다음 필터로 진행
     }
 
     // 공개 URL 패턴 체크 - 토큰 검증을 건너뛸 URL 패턴들
