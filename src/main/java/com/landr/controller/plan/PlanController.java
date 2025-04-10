@@ -28,15 +28,14 @@ public class PlanController {
     private final PlanService planService;
 
     // TODO: @AuthenticationPrincipal User user 추가
-    @Operation(summary = "강의 별명 수정", security = {})
+    @Operation(summary = "강의 별명 수정")
     @PatchMapping("/{planId}/lecture-name")
     public ResponseEntity<EditLectureNameResponse> editLectureName(
         @PathVariable Long planId,
-        @RequestBody @Valid EditLectureNameRequest req
+        @RequestBody @Valid EditLectureNameRequest req,
+        @AuthenticationPrincipal User user
     ) {
-        // TODO: 인증 로직 추가되면 삭제
-        Long memberId = 1L;
-        String editedLectureName = planService.editLectureName(req, planId, memberId);
+        String editedLectureName = planService.editLectureName(req, planId, user.getId());
 
         return ResponseEntity.ok(
             EditLectureNameResponse.builder()
@@ -46,7 +45,7 @@ public class PlanController {
         );
     }
 
-    @Operation(summary = "계획 생성", security = {})
+    @Operation(summary = "계획 생성")
     @PostMapping
     public ResponseEntity<Plan> createPlan(
         @RequestBody @Valid CreatePlanRequest request,
