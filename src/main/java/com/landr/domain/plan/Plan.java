@@ -22,8 +22,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Entity
 @Table(name = "plans")
@@ -85,6 +91,7 @@ public class Plan {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        isDeleted = false;
     }
 
     // 유저별 강의명 수정
