@@ -4,6 +4,7 @@ import com.landr.controller.plan.dto.CreatePlanRequest;
 import com.landr.controller.plan.dto.EditLectureNameRequest;
 import com.landr.controller.plan.dto.EditLectureNameResponse;
 import com.landr.domain.plan.Plan;
+import com.landr.domain.schedule.LessonSchedule;
 import com.landr.domain.user.User;
 import com.landr.service.dto.PlanSummaryDto;
 import com.landr.service.plan.PlanService;
@@ -63,5 +64,15 @@ public class PlanController {
         @AuthenticationPrincipal User user
     ) {
         return ResponseEntity.ok(planService.getMyPlans(user.getId()));
+    }
+
+    @Operation(summary = "계획 상세 조회")
+    @GetMapping("/{planId}")
+    public ResponseEntity<String> getPlan(
+        @PathVariable Long planId,
+        @AuthenticationPrincipal User user
+    ) {
+        List<LessonSchedule> lessonSchedules = planService.getPlan(planId, user.getId());
+        return ResponseEntity.ok(lessonSchedules.toString());
     }
 }
