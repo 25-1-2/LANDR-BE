@@ -5,6 +5,7 @@ import com.landr.controller.plan.dto.EditLectureNameRequest;
 import com.landr.domain.lecture.Lecture;
 import com.landr.domain.lecture.Lesson;
 import com.landr.domain.plan.Plan;
+import com.landr.domain.schedule.LessonSchedule;
 import com.landr.domain.user.User;
 import com.landr.exception.ApiException;
 import com.landr.exception.ExceptionType;
@@ -97,5 +98,11 @@ public class PlanService {
             .toList();
     }
 
-
+    // TODO: 개발 중
+    @Transactional(readOnly = true)
+    public List<LessonSchedule> getPlan(Long planId, Long userId) {
+        List<LessonSchedule> lessonScheduleList = lessonScheduleRepository.findByPlanIdAndUserId(
+            userId, planId);
+        return lessonScheduleList;
+    }
 }
