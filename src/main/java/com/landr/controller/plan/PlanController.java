@@ -73,5 +73,6 @@ public class PlanController {
         @AuthenticationPrincipal User user
     ) {
         return ResponseEntity.ok(planService.getPlan(planId, user.getId()));
+
     }
 }

@@ -98,11 +98,11 @@ public class PlanService {
             .toList();
     }
 
+    // TODO: 개발 중
     @Transactional(readOnly = true)
     public List<LessonSchedule> getPlan(Long planId, Long userId) {
         List<LessonSchedule> lessonScheduleList = lessonScheduleRepository.findByPlanIdAndUserId(
             userId, planId);
-
         return lessonScheduleList;
     }
 }

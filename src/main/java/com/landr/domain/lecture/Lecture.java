@@ -15,7 +15,7 @@ import lombok.Getter;
 public class Lecture {
 
     @Id
-    private Long id;
+    private String id;
 
     @Column(nullable = false)
     private String title;
