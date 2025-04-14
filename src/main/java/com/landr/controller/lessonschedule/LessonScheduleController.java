@@ -21,7 +21,6 @@ public class LessonScheduleController {
 
     private final LessonScheduleService lessonScheduleService;
 
-    // TODO: Swagger에 JWT 인증 추가 & @AuthenticationPrincipal User user 추가
     @Operation(summary = "강의 수강 체크 토글")
     @PatchMapping("/{lessonScheduleId}/check/toggle")
     public ResponseEntity<ToggleCheckResponse> toggleCheck(
