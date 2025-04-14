@@ -64,5 +64,4 @@ public interface LessonScheduleRepository extends JpaRepository<LessonSchedule, 
         "and p.id = :planId " +
         "ORDER BY l.order")
     List<LessonSchedule> findByPlanIdAndUserId(@Param("userId") Long userId, @Param("planId") Long planId);
-
 }

@@ -68,11 +68,11 @@ public class PlanController {
 
     @Operation(summary = "계획 상세 조회")
     @GetMapping("/{planId}")
-    public ResponseEntity<String> getPlan(
+    public ResponseEntity<List<LessonSchedule>> getPlan(
         @PathVariable Long planId,
         @AuthenticationPrincipal User user
     ) {
-        List<LessonSchedule> lessonSchedules = planService.getPlan(planId, user.getId());
-        return ResponseEntity.ok(lessonSchedules.toString());
+        return ResponseEntity.ok(planService.getPlan(planId, user.getId()));
+
     }
 }
