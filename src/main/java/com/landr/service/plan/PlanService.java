@@ -10,11 +10,16 @@ import com.landr.exception.ApiException;
 import com.landr.exception.ExceptionType;
 import com.landr.repository.lecture.LectureRepository;
 import com.landr.repository.lesson.LessonRepository;
+import com.landr.repository.lessonschedule.LessonScheduleRepository;
 import com.landr.repository.plan.PlanRepository;
+import com.landr.service.dto.PlanSummaryDto;
+import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class PlanService {
@@ -22,6 +27,7 @@ public class PlanService {
     private final PlanRepository planRepository;
     private final LectureRepository lectureRepository;
     private final LessonRepository lessonRepository;
+    private final LessonScheduleRepository lessonScheduleRepository;
 
     @Transactional
     public String editLectureName(EditLectureNameRequest req, Long planId, Long memberId) {
@@ -60,5 +66,35 @@ public class PlanService {
             .build();
 
         return planRepository.save(newPlan);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PlanSummaryDto> getMyPlans(Long userId) {
+
+        // 사용자의 모든 Plan 조회
+        List<Plan> plans = planRepository.findByUserIdAndIsDeletedFalseOrderByCreatedAt(userId);
+        log.info("plans: {}", plans);
+
+        // 사용자의 모든 Plan이 없으면 빈 리스트 반환
+        if (plans.isEmpty()) {
+            return List.of();
+        }
+
+        return plans.stream()
+            .map(plan -> {
+                Long completedLessons = lessonScheduleRepository.countCompletedLessonSchedulesByPlanId(
+                    plan.getId());
+                return PlanSummaryDto.builder()
+                    .planId(plan.getId())
+                    .lectureTitle(plan.getLecture().getTitle())
+                    .teacher(plan.getLecture().getTeacher())
+                    .platform(plan.getLecture().getPlatform())
+                    .totalLessons(
+                        plan.getEndLesson().getOrder() - plan.getStartLesson().getOrder() + 1)
+                    .completedLessons(completedLessons)
+                    .build();
+            })
+            .toList();
+
     }
 }

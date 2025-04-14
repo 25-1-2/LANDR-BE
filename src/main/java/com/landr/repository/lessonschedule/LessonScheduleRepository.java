@@ -43,4 +43,13 @@ public interface LessonScheduleRepository extends JpaRepository<LessonSchedule, 
     )
     Optional<LessonSchedule> findByIdAndUserId(@Param("lsId") Long lessonScheduleId,
         @Param("userId") Long userId);
+
+    /**
+     * planId에 해당하는 완료된 lessonSchedule의 개수를 조회합니다.
+     */
+    @Query("SELECT COUNT(ls) FROM LessonSchedule ls " +
+        "JOIN ls.dailySchedule ds " +
+        "JOIN ds.plan p " +
+        "WHERE p.id = :planId AND ls.completed = true")
+    Long countCompletedLessonSchedulesByPlanId(@Param("planId") Long planId);
 }
