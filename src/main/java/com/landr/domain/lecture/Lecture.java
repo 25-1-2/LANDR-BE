@@ -9,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "lectures")
 @Getter
@@ -36,6 +38,9 @@ public class Lecture {
 
     @Column(name = "total_duration", nullable = false)
     private int totalDuration;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     private String tag;
 }
