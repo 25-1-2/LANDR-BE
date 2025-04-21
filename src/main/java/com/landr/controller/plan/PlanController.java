@@ -4,8 +4,8 @@ import com.landr.controller.plan.dto.CreatePlanRequest;
 import com.landr.controller.plan.dto.EditLectureNameRequest;
 import com.landr.controller.plan.dto.EditLectureNameResponse;
 import com.landr.domain.plan.Plan;
-import com.landr.domain.schedule.LessonSchedule;
 import com.landr.domain.user.User;
+import com.landr.service.dto.PlanDetailResponse;
 import com.landr.service.dto.PlanSummaryDto;
 import com.landr.service.plan.PlanService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @AllArgsConstructor
 @RequestMapping("/v1/plans")
@@ -68,11 +70,11 @@ public class PlanController {
 
     @Operation(summary = "계획 상세 조회")
     @GetMapping("/{planId}")
-    public ResponseEntity<List<LessonSchedule>> getPlan(
+    public ResponseEntity<PlanDetailResponse> getPlan(
         @PathVariable Long planId,
         @AuthenticationPrincipal User user
     ) {
-        return ResponseEntity.ok(planService.getPlan(planId, user.getId()));
-
+        PlanDetailResponse planDetail = planService.getPlan(planId, user.getId());
+        return ResponseEntity.ok(planDetail);
     }
 }

@@ -47,4 +47,15 @@ public class DailySchedule {
 
     @Column(name = "total_duration", nullable = false)
     private int totalDuration;
+
+    @Override
+    public String toString() {
+        return "DailySchedule{" +
+            "id=" + id +
+            ", date=" + date +
+            ", dayOfWeek=" + dayOfWeek +
+            ", totalLessons=" + totalLessons +
+            ", totalDuration=" + totalDuration +
+            '}';
+    }
 }

@@ -5,16 +5,23 @@ import com.landr.controller.plan.dto.EditLectureNameRequest;
 import com.landr.domain.lecture.Lecture;
 import com.landr.domain.lecture.Lesson;
 import com.landr.domain.plan.Plan;
+import com.landr.domain.schedule.DailySchedule;
 import com.landr.domain.schedule.LessonSchedule;
 import com.landr.domain.user.User;
 import com.landr.exception.ApiException;
 import com.landr.exception.ExceptionType;
+import com.landr.repository.dailyschedule.DailyScheduleRepository;
 import com.landr.repository.lecture.LectureRepository;
 import com.landr.repository.lesson.LessonRepository;
 import com.landr.repository.lessonschedule.LessonScheduleRepository;
 import com.landr.repository.plan.PlanRepository;
+import com.landr.service.dto.DailyScheduleDto;
+import com.landr.service.dto.LessonScheduleDto;
+import com.landr.service.dto.PlanDetailResponse;
 import com.landr.service.dto.PlanSummaryDto;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,6 +36,7 @@ public class PlanService {
     private final LectureRepository lectureRepository;
     private final LessonRepository lessonRepository;
     private final LessonScheduleRepository lessonScheduleRepository;
+    private final DailyScheduleRepository dailyScheduleRepository;
 
     @Transactional
     public String editLectureName(EditLectureNameRequest req, Long planId, Long memberId) {
@@ -98,11 +106,62 @@ public class PlanService {
             .toList();
     }
 
-    // TODO: 개발 중
     @Transactional(readOnly = true)
-    public List<LessonSchedule> getPlan(Long planId, Long userId) {
-        List<LessonSchedule> lessonScheduleList = lessonScheduleRepository.findByPlanIdAndUserId(
-            userId, planId);
-        return lessonScheduleList;
+    public PlanDetailResponse getPlan(Long planId, Long userId) {
+        // 해당 계획 조회
+        Plan plan = planRepository.findByIdAndUserId(planId, userId)
+            .orElseThrow(() -> new ApiException(ExceptionType.PLAN_NOT_FOUND));
+
+        // 일별 일정 목록 조회
+        List<DailySchedule> dailySchedules = dailyScheduleRepository.findByUserIdAndPlanId(userId, planId);
+        log.info("dailySchedules: {}", dailySchedules);
+
+        if (dailySchedules.isEmpty()) {
+            return PlanDetailResponse.builder()
+                .planId(planId)
+                .lectureTitle(plan.getLecture().getTitle())
+                .teacher(plan.getLecture().getTeacher())
+                .platform(plan.getLecture().getPlatform())
+                .dailySchedules(List.of())
+                .build();
+        }
+
+        // 일별 일정 ID 목록 추출
+        List<Long> dailyScheduleIds = dailySchedules.stream()
+            .map(DailySchedule::getId)
+            .collect(Collectors.toList());
+
+        // 관련된 모든 레슨 일정 조회
+        List<LessonSchedule> lessonSchedules = lessonScheduleRepository
+            .findByDailyScheduleIdsWithLessonAndLecture(dailyScheduleIds);
+
+        // 레슨 일정을 일별 일정별로 그룹화
+        Map<Long, List<LessonSchedule>> lessonScheduleMap = lessonSchedules.stream()
+            .collect(Collectors.groupingBy(ls -> ls.getDailySchedule().getId()));
+
+        // 일별 일정 DTO 생성
+        List<DailyScheduleDto> dailyScheduleDtos = dailySchedules.stream()
+            .map(ds -> {
+                List<LessonScheduleDto> lsDtos = lessonScheduleMap.getOrDefault(ds.getId(), List.of())
+                    .stream()
+                    .map(LessonScheduleDto::convert)
+                    .collect(Collectors.toList());
+
+                return DailyScheduleDto.builder()
+                    .date(ds.getDate())
+                    .dayOfWeek(ds.getDayOfWeek())
+                    .lessonSchedules(lsDtos)
+                    .build();
+            })
+            .collect(Collectors.toList());
+
+        // 최종 응답 생성
+        return PlanDetailResponse.builder()
+            .planId(planId)
+            .lectureTitle(plan.getLecture().getTitle())
+            .teacher(plan.getLecture().getTeacher())
+            .platform(plan.getLecture().getPlatform())
+            .dailySchedules(dailyScheduleDtos)
+            .build();
     }
 }
