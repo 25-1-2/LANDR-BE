@@ -75,7 +75,6 @@ public class PlanController {
         @AuthenticationPrincipal User user
     ) {
         PlanDetailResponse planDetail = planService.getPlan(planId, user.getId());
-        log.info("planDetail: {}", planDetail);
         return ResponseEntity.ok(planDetail);
     }
 }
