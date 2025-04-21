@@ -4,8 +4,8 @@ import com.landr.controller.plan.dto.CreatePlanRequest;
 import com.landr.controller.plan.dto.EditLectureNameRequest;
 import com.landr.controller.plan.dto.EditLectureNameResponse;
 import com.landr.domain.plan.Plan;
-import com.landr.domain.schedule.LessonSchedule;
 import com.landr.domain.user.User;
+import com.landr.service.dto.PlanDetailResponse;
 import com.landr.service.dto.PlanSummaryDto;
 import com.landr.service.plan.PlanService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -70,10 +70,12 @@ public class PlanController {
 
     @Operation(summary = "계획 상세 조회")
     @GetMapping("/{planId}")
-    public ResponseEntity<List<LessonSchedule>> getPlan(
+    public ResponseEntity<PlanDetailResponse> getPlan(
         @PathVariable Long planId,
         @AuthenticationPrincipal User user
     ) {
-        return ResponseEntity.ok(planService.getPlan(planId, user.getId()));
+        PlanDetailResponse planDetail = planService.getPlan(planId, user.getId());
+        log.info("planDetail: {}", planDetail);
+        return ResponseEntity.ok(planDetail);
     }
 }

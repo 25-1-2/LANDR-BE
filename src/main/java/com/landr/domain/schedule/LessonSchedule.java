@@ -44,4 +44,16 @@ public class LessonSchedule {
         this.completed = !this.completed;
         return this.completed;
     }
+
+    @Override
+    public String toString() {
+        return "LessonSchedule{" +
+            "id=" + id +
+            ", dailySchedule=" + dailySchedule +
+            ", lesson=" + lesson +
+            ", adjustedDuration=" + adjustedDuration +
+            ", displayOrder=" + displayOrder +
+            ", completed=" + completed +
+            '}';
+    }
 }
