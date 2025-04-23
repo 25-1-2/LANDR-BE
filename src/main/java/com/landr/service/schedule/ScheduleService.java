@@ -1,4 +1,4 @@
-package com.landr.service.scheduler;
+package com.landr.service.schedule;
 
 import com.landr.domain.plan.Plan;
 import com.landr.domain.schedule.DailySchedule;

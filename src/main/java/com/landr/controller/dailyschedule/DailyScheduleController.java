@@ -2,7 +2,7 @@ package com.landr.controller.dailyschedule;
 
 import com.landr.domain.user.User;
 import com.landr.service.dto.DailyScheduleWithLessonsDto;
-import com.landr.service.scheduler.ScheduleService;
+import com.landr.service.schedule.ScheduleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
