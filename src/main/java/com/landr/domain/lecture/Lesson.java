@@ -37,4 +37,13 @@ public class Lesson {
 
     @Column(nullable = false)
     private int duration;
+
+    @Override
+    public String toString() {
+        return "Lesson{" +
+            "id='" + id + '\'' +
+            ", title='" + title + '\'' +
+            ", order=" + order +
+            '}';
+    }
 }

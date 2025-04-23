@@ -19,6 +19,7 @@ import com.landr.service.dto.DailyScheduleDto;
 import com.landr.service.dto.LessonScheduleDto;
 import com.landr.service.dto.PlanDetailResponse;
 import com.landr.service.dto.PlanSummaryDto;
+import com.landr.service.schedule.ScheduleGeneratorService;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ public class PlanService {
     private final LessonRepository lessonRepository;
     private final LessonScheduleRepository lessonScheduleRepository;
     private final DailyScheduleRepository dailyScheduleRepository;
+    private final ScheduleGeneratorService scheduleGeneratorService;
 
     @Transactional
     public String editLectureName(EditLectureNameRequest req, Long planId, Long memberId) {
@@ -74,7 +76,10 @@ public class PlanService {
             .playbackSpeed(req.getPlaybackSpeed())
             .build();
 
-        return planRepository.save(newPlan);
+        Plan savedPlan = planRepository.save(newPlan);
+
+        scheduleGeneratorService.generateSchedules(savedPlan);
+        return savedPlan;
     }
 
     @Transactional(readOnly = true)

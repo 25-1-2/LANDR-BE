@@ -2,7 +2,7 @@ package com.landr.controller.home;
 
 import com.landr.controller.home.dto.HomeResponse;
 import com.landr.domain.user.User;
-import com.landr.service.scheduler.ScheduleService;
+import com.landr.service.schedule.ScheduleService;
 import com.landr.service.dto.DailyScheduleWithLessonsDto;
 import com.landr.service.dto.UserProgressDto;
 import io.swagger.v3.oas.annotations.Operation;
