@@ -18,7 +18,7 @@ import lombok.Getter;
 @Getter
 @Entity
 @Table(name = "lessons", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"lecture_id", "sequence"})
+        @UniqueConstraint(columnNames = {"lecture_id", "sequence"})
 })
 public class Lesson {
 

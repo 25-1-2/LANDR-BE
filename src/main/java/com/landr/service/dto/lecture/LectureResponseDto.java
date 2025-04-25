@@ -1,4 +1,4 @@
-package com.landr.service.dto;
+package com.landr.service.dto.lecture;
 
 import com.landr.domain.lecture.Lecture;
 import com.landr.domain.lecture.Platform;
@@ -30,9 +30,6 @@ public class LectureResponseDto {
     @Schema(description = "강의 생성일자")
     private LocalDateTime createdAt;
 
-    @Schema(description = "해당 강의로 생성된 계획 수")
-    private Long planCount;
-
     public static LectureResponseDto from(Lecture lecture, Long planCount) {
         return LectureResponseDto.builder()
                 .id(lecture.getId())
@@ -41,8 +38,6 @@ public class LectureResponseDto {
                 .platform(lecture.getPlatform())
                 .subject(lecture.getSubject())
                 .createdAt(lecture.getCreatedAt())
-                .planCount(planCount)
                 .build();
     }
 }
-

@@ -1,8 +1,9 @@
-package com.landr.service.dto;
+package com.landr.service.dto.lecture;
 
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -10,5 +11,6 @@ import java.util.List;
 public class CursorPageResponseDto<T> {
     private List<T> data;
     private Long nextCursor;
+    private LocalDateTime nextCreatedAt;
     private boolean hasNext;
 }
