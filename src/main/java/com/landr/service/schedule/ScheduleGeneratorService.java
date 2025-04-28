@@ -68,7 +68,7 @@ public class ScheduleGeneratorService {
         Lesson startLesson = plan.getStartLesson();
         Lesson endLesson = plan.getEndLesson();
 
-        String lectureId = startLesson.getLecture().getId();
+        Long lectureId = startLesson.getLecture().getId();
         int startOrder = startLesson.getOrder();
         int endOrder = endLesson.getOrder();
 

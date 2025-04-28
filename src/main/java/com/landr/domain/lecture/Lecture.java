@@ -7,15 +7,23 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Entity
 @Table(name = "lectures")
 @Getter
 public class Lecture {
 
     @Id
-    private String id;
+    private Long id;
 
     @Column(nullable = false)
     private String title;
@@ -36,6 +44,9 @@ public class Lecture {
 
     @Column(name = "total_duration", nullable = false)
     private int totalDuration;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     private String tag;
 }

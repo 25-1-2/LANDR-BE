@@ -21,7 +21,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
         + "AND l.order BETWEEN :startOrder AND :endOrder "
         + "ORDER BY l.order")
     List<Lesson> findByLectureIdAndOrderBetweenOrderByOrder(
-        @Param("lectureId") String lectureId,
+        @Param("lectureId") Long lectureId,
         @Param("startOrder") int startOrder,
         @Param("endOrder") int endOrder);
 }
