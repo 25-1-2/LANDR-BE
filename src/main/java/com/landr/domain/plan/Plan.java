@@ -6,11 +6,13 @@ import com.landr.domain.lecture.Lesson;
 import com.landr.domain.user.User;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,8 +24,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Entity
 @Table(name = "plans")
@@ -33,22 +41,22 @@ public class Plan {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lecture_id", nullable = false)
+    @JoinColumn(name = "lecture_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Lecture lecture;
 
     @Column(name = "lecture_name", nullable = false)
     private String lectureName;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "start_lesson_id")
+    @JoinColumn(name = "start_lesson_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Lesson startLesson;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "end_lesson_id")
+    @JoinColumn(name = "end_lesson_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Lesson endLesson;
 
     @Enumerated(EnumType.STRING)
@@ -85,6 +93,7 @@ public class Plan {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        isDeleted = false;
     }
 
     // 유저별 강의명 수정

@@ -12,11 +12,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "lesson_schedules")
 @Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class LessonSchedule {
 
     @Id
@@ -43,5 +49,17 @@ public class LessonSchedule {
     public boolean toggleCheck() {
         this.completed = !this.completed;
         return this.completed;
+    }
+
+    @Override
+    public String toString() {
+        return "LessonSchedule{" +
+            "id=" + id +
+            ", dailySchedule=" + dailySchedule +
+            ", lesson=" + lesson +
+            ", adjustedDuration=" + adjustedDuration +
+            ", displayOrder=" + displayOrder +
+            ", completed=" + completed +
+            '}';
     }
 }
