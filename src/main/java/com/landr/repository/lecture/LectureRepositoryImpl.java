@@ -14,14 +14,13 @@ import java.util.List;
 public class LectureRepositoryImpl implements LectureRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
+    private final QLecture lecture = QLecture.lecture;
 
     /**
      * 최신순 정렬 (createdAt DESC, id DESC) 기준으로 커서 페이지네이션 (전체 조회)
      */
     @Override
     public List<Lecture> findLatestLecturesWithCursor(LectureSearchRequest req) {
-        QLecture lecture = QLecture.lecture;
-
         BooleanBuilder cond = new BooleanBuilder();
 
         // 커서 조건 (이전 페이지 마지막 강의의 createdAt, id를 기준으로)
@@ -48,8 +47,6 @@ public class LectureRepositoryImpl implements LectureRepositoryCustom {
      */
     @Override
     public List<Lecture> findLatestLecturesBySearch(LectureSearchRequest req) {
-        QLecture lecture = QLecture.lecture;
-
         BooleanBuilder cond = new BooleanBuilder();
 
         // 검색어 조건 (강의명 또는 선생님 이름)
@@ -74,7 +71,7 @@ public class LectureRepositoryImpl implements LectureRepositoryCustom {
         return queryFactory
                 .selectFrom(lecture)
                 .where(cond)
-                .orderBy(lecture.createdAt.desc(), lecture.id.desc())  // 최신순 정렬
+                .orderBy(lecture.createdAt.desc(), lecture.id.desc()) // 최신순 정렬
                 .limit(req.getOffset() + 1)  // 페이지 크기 + 1 (hasNext 판별용)
                 .fetch();
     }
