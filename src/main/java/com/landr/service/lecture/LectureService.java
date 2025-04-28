@@ -26,7 +26,7 @@ public class LectureService {
         boolean hasNext = results.size() > req.getOffset();
         List<Lecture> page = results.stream().limit(req.getOffset()).toList();
 
-        String nextCursorId = hasNext ? page.get(page.size() - 1).getId() : null;
+        Long nextCursorId = hasNext ? page.get(page.size() - 1).getId() : null;
         LocalDateTime nextCursorCreatedAt = hasNext ? page.get(page.size() - 1).getCreatedAt() : null;
 
         List<LectureResponseDto> dtos = page.stream()
@@ -50,7 +50,7 @@ public class LectureService {
         boolean hasNext = results.size() > req.getOffset();
         List<Lecture> page = results.stream().limit(req.getOffset()).toList();
 
-        String nextCursorId = hasNext ? page.get(page.size() - 1).getId() : null;
+        Long nextCursorId = hasNext ? page.get(page.size() - 1).getId() : null;
         LocalDateTime nextCursorCreatedAt = hasNext ? page.get(page.size() - 1).getCreatedAt() : null;
 
         List<LectureResponseDto> dtos = page.stream()

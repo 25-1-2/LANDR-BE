@@ -10,7 +10,7 @@ import java.util.List;
 @Builder
 public class CursorPageResponseDto<T> {
     private List<T> data;
-    private String nextCursor;
+    private Long nextCursor;
     private LocalDateTime nextCreatedAt;
     private boolean hasNext;
 }

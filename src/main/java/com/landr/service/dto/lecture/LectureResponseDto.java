@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 public class LectureResponseDto {
 
-    private String id;
+    private Long id;
     private String title;
     private String teacher;
     private Platform platform;

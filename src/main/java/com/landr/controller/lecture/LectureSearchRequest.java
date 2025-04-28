@@ -15,7 +15,7 @@ public class LectureSearchRequest {
     private String search;
 
     @Schema(description = "커서: 마지막으로 조회한 강의 ID", example = "12345")
-    private String cursorLectureId;
+    private Long cursorLectureId;
 
     @Schema(description = "커서: 마지막으로 조회한 강의 생성일시", example = "2024-04-27T15:30:00")
     private LocalDateTime cursorCreatedAt;
