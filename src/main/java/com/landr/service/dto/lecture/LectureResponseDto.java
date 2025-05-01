@@ -18,6 +18,8 @@ public class LectureResponseDto {
     private Platform platform;
     private Subject subject;
     private LocalDateTime createdAt;
+    private String tag;
+    private int totalLessons;
 
     public static LectureResponseDto from(Lecture lecture, Long planCount) {
         return LectureResponseDto.builder()
@@ -27,6 +29,8 @@ public class LectureResponseDto {
                 .platform(lecture.getPlatform())
                 .subject(lecture.getSubject())
                 .createdAt(lecture.getCreatedAt())
+                .tag(lecture.getTag())
+                .totalLessons(lecture.getTotalLessons())
                 .build();
     }
 }
