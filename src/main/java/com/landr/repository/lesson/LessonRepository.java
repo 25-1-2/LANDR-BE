@@ -24,4 +24,8 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
         @Param("lectureId") Long lectureId,
         @Param("startOrder") int startOrder,
         @Param("endOrder") int endOrder);
+
+    @Query("SELECT l FROM Lesson l "
+        + "WHERE l.lecture.id = :lectureId")
+    List<Lesson> findLessonsByLectureId(Long lectureId);
 }
