@@ -1,5 +1,6 @@
 package com.landr.controller.lecture;
 
+import com.landr.controller.lecture.dto.LessonsResponseDto;
 import com.landr.service.dto.lecture.CursorPageResponseDto;
 import com.landr.service.dto.lecture.LectureResponseDto;
 import com.landr.service.lecture.LectureService;
@@ -7,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springdoc.core.annotations.ParameterObject;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,5 +39,13 @@ public class LectureController {
             @ParameterObject LectureSearchRequest req
     ) {
         return lectureService.searchLatestLectures(req);
+    }
+
+    @GetMapping("/{lectureId}/lessons")
+    @Operation(summary = "lectureId에 해당하는 강의의 lesson 목록 조회", description = "lectureId에 해당하는 강의의 lesson 목록을 조회합니다.")
+    public ResponseEntity<LessonsResponseDto> getLessonsByLectureId(
+            @PathVariable Long lectureId
+    ) {
+        return ResponseEntity.ok(lectureService.getLessonsByLectureId(lectureId));
     }
 }
