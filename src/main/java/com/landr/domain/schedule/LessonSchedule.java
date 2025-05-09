@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -46,8 +47,11 @@ public class LessonSchedule {
     @Column(nullable = false)
     private boolean completed = false;
 
+    private LocalDateTime updatedAt;
+
     public boolean toggleCheck() {
         this.completed = !this.completed;
+        this.updatedAt = LocalDateTime.now();
         return this.completed;
     }
 
