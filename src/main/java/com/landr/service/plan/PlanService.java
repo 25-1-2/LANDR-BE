@@ -64,7 +64,7 @@ public class PlanService {
 
         Plan newPlan = Plan.builder()
             .lecture(lecture)
-            .lectureName(lecture.getTitle())
+            .lectureName(lecture.getTitle().substring(0, Math.min(8, lecture.getTitle().length())))
             .user(user)
             .planType(req.getPlanType())
             .startLesson(startLesson)
