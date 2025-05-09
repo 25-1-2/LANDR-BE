@@ -1,6 +1,7 @@
 package com.landr.controller.user;
 
 import com.landr.config.JwtTokenProvider;
+import com.landr.controller.user.dto.EditNameRequest;
 import com.landr.controller.user.dto.LoginRequest;
 import com.landr.controller.user.dto.LoginResponse;
 import com.landr.controller.user.dto.UserResponse;
@@ -31,7 +32,7 @@ public class UserController {
         return ResponseEntity.ok(new LoginResponse(token));
     }
 
-    @Operation(summary = "현재 사용자 프로필 조회", security = {})
+    @Operation(summary = "현재 사용자 프로필 조회")
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getUserProfile(
             @AuthenticationPrincipal User user
@@ -39,5 +40,20 @@ public class UserController {
         UserResponse response = new UserResponse(user.getId(), user.getEmail(), user.getName());
 
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "사용자 이름 수정")
+    @PatchMapping("/me/name")
+    public ResponseEntity<UserResponse> updateUserName(
+            @AuthenticationPrincipal User user,
+            @RequestBody @Valid EditNameRequest request
+    ) {
+        userService.updateUserName(user, request.getName());
+        return ResponseEntity.ok(
+            UserResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .build());
     }
 }

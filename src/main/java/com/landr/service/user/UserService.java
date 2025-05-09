@@ -22,4 +22,9 @@ public class UserService {
                     return userRepository.save(newUser);
                 });
     }
+
+    @Transactional
+    public void updateUserName(User user, String newName) {
+        user.updateName(newName);
+    }
 }
