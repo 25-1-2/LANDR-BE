@@ -1,6 +1,7 @@
 package com.landr.repository.lessonschedule;
 
 import com.landr.domain.schedule.LessonSchedule;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -65,4 +66,19 @@ public interface LessonScheduleRepository extends JpaRepository<LessonSchedule, 
         "AND p.id = :planId " +
         "ORDER BY l.order")
     List<LessonSchedule> findByPlanIdAndUserId(@Param("userId") Long userId, @Param("planId") Long planId);
+
+    /**
+     * 특정 사용자가 특정 날짜에 완료한 레슨이 있는지 확인
+     */
+    @Query("SELECT COUNT(ls) > 0 FROM LessonSchedule ls " +
+        "JOIN ls.dailySchedule ds " +
+        "JOIN ds.plan p " +
+        "WHERE p.user.id = :userId " +
+        "AND ls.completed = true " +
+        "AND ls.updatedAt BETWEEN :startDateTime AND :endDateTime")
+    boolean existsCompletedLessonOnDate(
+        @Param("userId") Long userId,
+        @Param("startDateTime") LocalDateTime startDateTime,
+        @Param("endDateTime") LocalDateTime endDateTime
+    );
 }
