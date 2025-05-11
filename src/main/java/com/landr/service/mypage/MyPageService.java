@@ -12,5 +12,8 @@ public interface MyPageService {
      */
     MyPage getMyPageInfo(User user);
 
-    MyPageStatistics getMonthlyStatistics(Long id, YearMonth date);
+    /**
+     * 월별 과목별 공부 시간, 주간 공부 시간 통계 조회
+     */
+    MyPageStatistics getMonthlyStatistics(Long userId, YearMonth date);
 }

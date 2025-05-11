@@ -6,12 +6,19 @@ import com.landr.domain.schedule.LessonSchedule;
 import com.landr.domain.user.User;
 import com.landr.repository.lessonschedule.LessonScheduleRepository;
 import com.landr.repository.plan.PlanRepository;
-import com.landr.service.dto.PlanSummaryDto;
+import com.landr.service.dto.CompletedPlanDto;
 import com.landr.service.mypage.dto.MyPage;
+import com.landr.service.mypage.dto.MyPageStatistics;
 import com.landr.service.mypage.dto.SubjectAchievementDto;
+import com.landr.service.mypage.dto.SubjectTimeDto;
+import com.landr.service.mypage.dto.WeeklyTimeDto;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.temporal.WeekFields;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -34,8 +41,18 @@ public class MyPageServiceImpl implements MyPageService {
         List<Plan> userplanList = planRepository.findByUserIdAndIsDeletedFalseOrderByCreatedAt(
             user.getId());
 
+        // 오늘의 레슨 스케줄 정보 조회
+        LocalDate today = LocalDate.now();
+        List<LessonSchedule> todayLessonSchedules = lessonScheduleRepository.findTodayLessonSchedules(
+            user.getId(), today);
+
+        int todayTotalLessonCount = todayLessonSchedules.size();
+        int todayCompletedLessonCount = (int) todayLessonSchedules.stream()
+            .filter(LessonSchedule::isCompleted)
+            .count();
+
         // 사용자가 완료한 계획 리스트
-        List<PlanSummaryDto> completedPlans = userplanList.stream()
+        List<CompletedPlanDto> completedPlans = userplanList.stream()
             .filter(plan -> {
                 // 해당 Plan의 모든 LessonSchedule 조회
                 List<LessonSchedule> lessonSchedules = lessonScheduleRepository.findByPlanIdAndUserId(
@@ -45,7 +62,7 @@ public class MyPageServiceImpl implements MyPageService {
                 return !lessonSchedules.isEmpty() &&
                     lessonSchedules.stream().allMatch(LessonSchedule::isCompleted);
             })
-            .map(plan -> PlanSummaryDto.builder()
+            .map(plan -> CompletedPlanDto.builder()
                 .planId(plan.getId())
                 .lectureTitle(plan.getLecture().getTitle())
                 .teacher(plan.getLecture().getTeacher())
@@ -57,11 +74,68 @@ public class MyPageServiceImpl implements MyPageService {
 
         return MyPage.builder()
             .userName(user.getName())
+            .todayTotalLessonCount(todayTotalLessonCount)
+            .todayCompletedLessonCount(todayCompletedLessonCount)
             .completedLectureCount(completedPlans.size())
             .studyStreak(calculateStudyStreak(user.getId()))
             .goalDate(null)
             .completedPlanList(completedPlans)
             .subjectAchievementList(calculateSubjectAchievements(user.getId(), userplanList))
+            .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MyPageStatistics getMonthlyStatistics(Long userId, YearMonth date) {
+        LocalDate startDate = date.atDay(1);
+        LocalDate endDate = date.atEndOfMonth();
+
+        // 해당 월의 완료된 lessonSchedule 조회
+        List<LessonSchedule> completedLessonScheduleList = lessonScheduleRepository.findCompletedLessonSchedulesInMonth(
+            userId, startDate, endDate);
+
+        // 과목별 공부 시간 계산
+        Map<Subject, Long> subjectTimeMap = completedLessonScheduleList.stream()
+            .collect(Collectors.groupingBy(
+                lessonSchedule -> lessonSchedule.getLesson().getLecture().getSubject(),
+                Collectors.summingLong(LessonSchedule::getAdjustedDuration)
+            ));
+
+        // 총 공부 시간 계산
+        long totalMinutes = subjectTimeMap.values().stream().mapToLong(Long::longValue).sum();
+
+        // 과목별 시간 DTO 생성
+        List<SubjectTimeDto> subjectTimes = subjectTimeMap.entrySet().stream()
+            .map(entry -> SubjectTimeDto.builder()
+                .subject(entry.getKey())
+                .totalMinutes(entry.getValue())
+                .percentage(totalMinutes > 0 ? Math.round((double) entry.getValue() / totalMinutes * 100 * 100) / 100.0 : 0.0)
+                .build())
+            .sorted((a, b) -> Long.compare(b.getTotalMinutes(), a.getTotalMinutes()))
+            .toList();
+
+        // 주차별 공부 시간 계산 (월요일이 한 주의 시작)
+        WeekFields weekFields = WeekFields.of(DayOfWeek.MONDAY, 1);
+        Map<Integer, Long> weeklyTimeMap = completedLessonScheduleList.stream()
+            .collect(Collectors.groupingBy(
+                ls -> ls.getDailySchedule().getDate().get(weekFields.weekOfMonth()),
+                Collectors.summingLong(LessonSchedule::getAdjustedDuration)
+            ));
+
+        // 해당 월의 모든 주차에 대한 통계 생성 (0분인 주차도 포함)
+        int totalWeeksInMonth = date.atEndOfMonth().get(weekFields.weekOfMonth());
+        List<WeeklyTimeDto> weeklyTimes = IntStream.rangeClosed(1, totalWeeksInMonth)
+            .mapToObj(weekNumber -> WeeklyTimeDto.builder()
+                .weekNumber(weekNumber)
+                .totalMinutes(weeklyTimeMap.getOrDefault(weekNumber, 0L))
+                .build())
+            .toList();
+
+        return MyPageStatistics.builder()
+            .date(date)
+            .totalStudyMinutes(totalMinutes)
+            .subjectTimes(subjectTimes)
+            .weeklyTimes(weeklyTimes)
             .build();
     }
 

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WeeklyTimeDto {
+
     private int weekNumber;
     private long totalMinutes;
-    private String weekLabel; // "1주차", "2주차" 등
 }
