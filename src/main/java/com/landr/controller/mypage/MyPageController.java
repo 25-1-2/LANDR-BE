@@ -26,7 +26,7 @@ public class MyPageController {
 
     // 마이페이지 기본 정보 조회
     @GetMapping
-    @Operation(summary = "마이페이지 기본 정보 조회")
+    @Operation(summary = "마이페이지 기본 정보 조회", description = "유저 이름, 오늘 수강할 강의 수 및 완료한 강의 수, 완강수, 공부 연속 일수, 목표 날짜, 완료한 강의 리스트, 과목별 성취도 리스트를 조회합니다.")
     public ResponseEntity<MyPage> getMyPageInfo(
         @AuthenticationPrincipal User user
     ) {
