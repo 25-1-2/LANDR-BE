@@ -1,6 +1,8 @@
 package com.landr.service.user;
 
 import com.landr.domain.user.User;
+import com.landr.exception.ApiException;
+import com.landr.exception.ExceptionType;
 import com.landr.repository.user.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +26,9 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUserName(User user, String newName) {
+    public void updateUserName(Long userId, String newName) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ApiException(ExceptionType.USER_NOT_FOUND));
         user.updateName(newName);
     }
 }

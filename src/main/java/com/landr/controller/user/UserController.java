@@ -48,7 +48,7 @@ public class UserController {
             @AuthenticationPrincipal User user,
             @RequestBody @Valid EditNameRequest request
     ) {
-        userService.updateUserName(user, request.getName());
+        userService.updateUserName(user.getId(), request.getName());
         return ResponseEntity.ok(
             UserResponse.builder()
                 .id(user.getId())
