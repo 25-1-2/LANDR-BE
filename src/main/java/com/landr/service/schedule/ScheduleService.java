@@ -58,6 +58,7 @@ public class ScheduleService {
             .build();
     }
 
+    // TODO: 진행률 낮은 순으로 정렬하고 완강된 강의는 제외
     /**
      * 특정 유저의 강의별 진행 상황을 조회합니다.
      */

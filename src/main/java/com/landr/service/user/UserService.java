@@ -1,28 +1,43 @@
 package com.landr.service.user;
 
+import com.landr.controller.user.dto.LoginRequest;
 import com.landr.domain.user.User;
+import com.landr.domain.user.UserDevice;
 import com.landr.exception.ApiException;
 import com.landr.exception.ExceptionType;
 import com.landr.repository.user.UserRepository;
+import com.landr.repository.userdevice.UserDeviceRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserDeviceRepository userDeviceRepository;
 
     @Transactional
-    public User findOrCreateUser(String email, String name) {
-        return userRepository.findByEmail(email)
-                .orElseGet(() -> {
-                    User newUser = new User();
-                    newUser.setEmail(email);
-                    newUser.setName(name);
-                    return userRepository.save(newUser);
-                });
+    public User findOrCreateUser(LoginRequest request) {
+        User user= userRepository.findByEmail(request.getEmail())
+            .orElseGet(() -> {
+                User newUser = new User();
+                newUser.setEmail(request.getEmail());
+                newUser.setName(request.getName());
+                return userRepository.save(newUser);
+            });
+
+        UserDevice userDevice = userDeviceRepository.save(
+            UserDevice.builder()
+                .user(user)
+                .deviceIdentifier(request.getFcmToken())
+                .build());
+
+        log.info("User device saved: {}", userDevice);
+        return user;
     }
 
     @Transactional
