@@ -33,7 +33,6 @@ public class MyPageServiceImpl implements MyPageService {
     private final PlanRepository planRepository;
     private final LessonScheduleRepository lessonScheduleRepository;
 
-
     @Override
     @Transactional(readOnly = true)
     public MyPage getMyPageInfo(User user) {
@@ -70,7 +69,8 @@ public class MyPageServiceImpl implements MyPageService {
                 .build())
             .toList();
 
-        // TODO: 목표 날짜 조회
+        // 수강 중인 강의 수 = 전체 계획 수 - 완료한 계획 수
+        int inProgressLectureCount = userplanList.size() - completedPlans.size();
 
         return MyPage.builder()
             .userName(user.getName())
@@ -78,7 +78,7 @@ public class MyPageServiceImpl implements MyPageService {
             .todayCompletedLessonCount(todayCompletedLessonCount)
             .completedLectureCount(completedPlans.size())
             .studyStreak(calculateStudyStreak(user.getId()))
-            .goalDate(null)
+            .inProgressLectureCount(inProgressLectureCount)
             .completedPlanList(completedPlans)
             .subjectAchievementList(calculateSubjectAchievements(user.getId(), userplanList))
             .build();
