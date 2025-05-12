@@ -38,7 +38,11 @@ public enum ExceptionType {
 
     // User 관련 (에러 번호 7로 시작)
     INVALID_USER_NAME(40471, HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 이름입니다."),
-    USER_NOT_FOUND(40472, HttpStatus.BAD_REQUEST, "해당 사용자를 찾을 수 없습니다."),;
+    USER_NOT_FOUND(40472, HttpStatus.BAD_REQUEST, "해당 사용자를 찾을 수 없습니다."),
+
+    // DDay 관련 (에러 번호 8로 시작)
+    DDAY_NOT_FOUND(40481, HttpStatus.NOT_FOUND, "해당 D-Day를 찾을 수 없습니다."),
+    DDAY_OWNER_NOT_MATCH(40382, HttpStatus.FORBIDDEN, "해당 D-Day의 소유자가 아닙니다."), ;
 
 
     private final int errorCode;    // errorCode는 5자리로 구성(3자리는 Http status code + 2자리 에러번호)

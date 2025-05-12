@@ -34,7 +34,6 @@ public class PlanController {
 
     private final PlanService planService;
 
-    // TODO: @AuthenticationPrincipal User user 추가
     @Operation(summary = "강의 별명 수정")
     @PatchMapping("/{planId}/lecture-name")
     public ResponseEntity<EditLectureNameResponse> editLectureName(

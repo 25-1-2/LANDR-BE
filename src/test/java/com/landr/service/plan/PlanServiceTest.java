@@ -87,26 +87,26 @@ class PlanServiceTest {
     @DisplayName("강의 이름 수정 성공")
     void editLectureName_Success() {
         // Given
-        when(planRepository.findByIdAndUserIdAndIsDeletedFalse(planId, userId)).thenReturn(Optional.of(plan));
+        when(planRepository.findByIdAndUserId(planId, userId)).thenReturn(Optional.of(plan));
 
         // When
         planService.editLectureName(request, planId, userId);
 
         // Then
-        verify(planRepository, times(1)).findByIdAndUserIdAndIsDeletedFalse(planId, userId);
+        verify(planRepository, times(1)).findByIdAndUserId(planId, userId);
     }
 
     @Test
     @DisplayName("존재하지 않는 계획 ID로 강의 이름 수정 시도")
     void editLectureName_PlanNotFound() {
         // Given
-        when(planRepository.findByIdAndUserIdAndIsDeletedFalse(anyLong(), anyLong())).thenReturn(Optional.empty());
+        when(planRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.empty());
 
         // When & Then
         ApiException exception = assertThrows(ApiException.class, () -> planService.editLectureName(request, planId, userId));
 
         assertEquals(ExceptionType.PLAN_NOT_FOUND, exception.getExceptionType());
-        verify(planRepository, times(1)).findByIdAndUserIdAndIsDeletedFalse(planId, userId);
+        verify(planRepository, times(1)).findByIdAndUserId(planId, userId);
     }
 
     @Test

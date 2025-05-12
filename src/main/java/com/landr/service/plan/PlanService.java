@@ -42,7 +42,7 @@ public class PlanService {
 
     @Transactional
     public String editLectureName(EditLectureNameRequest req, Long planId, Long memberId) {
-        Plan plan = planRepository.findByIdAndUserIdAndIsDeletedFalse(planId, memberId)
+        Plan plan = planRepository.findByIdAndUserId(planId, memberId)
             .orElseThrow(() -> new ApiException(
                 ExceptionType.PLAN_NOT_FOUND));
 
@@ -114,7 +114,7 @@ public class PlanService {
     @Transactional(readOnly = true)
     public PlanDetailResponse getPlan(Long planId, Long userId) {
         // 해당 계획 조회
-        Plan plan = planRepository.findByIdAndUserIdAndIsDeletedFalse(planId, userId)
+        Plan plan = planRepository.findByIdAndUserId(planId, userId)
             .orElseThrow(() -> new ApiException(ExceptionType.PLAN_NOT_FOUND));
 
         // 일별 일정 목록 조회
@@ -174,10 +174,9 @@ public class PlanService {
 
     @Transactional
     public void deletePlan(Long planId, Long userId) {
-        Plan plan = planRepository.findByIdAndUserIdAndIsDeletedFalse(planId, userId)
+        Plan plan = planRepository.findByIdAndUserId(planId, userId)
             .orElseThrow(() -> new ApiException(ExceptionType.PLAN_NOT_FOUND));
 
-        // 계획 삭제
-        plan.delete();
+        planRepository.delete(plan);
     }
 }
