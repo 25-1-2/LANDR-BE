@@ -111,7 +111,7 @@ public class ScheduleService {
 
         // 결과 반환
         return UserProgressDto.builder()
-            .lectureProgress(lectureProgressList)
+            .lectureProgress(sortedProgressList)
             .totalCompletedLessons(totalCompletedLessons)
             .totalLessons(totalLessons)
             .build();
