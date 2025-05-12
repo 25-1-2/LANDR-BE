@@ -11,6 +11,7 @@ import com.landr.service.dto.LessonScheduleDto;
 import com.landr.service.dto.UserProgressDto;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -98,6 +99,15 @@ public class ScheduleService {
                 .totalLessons(lessonSchedules.size())
                 .build());
         }
+
+        // 강의별 진행률 계산해서 그 값을 바탕으로 오름차순 정렬 & 완강된 강의 제외
+        List<LectureProgressDto> sortedProgressList = lectureProgressList.stream()
+            // 완강된 강의 제외 (completedLessons가 totalLessons보다 작은 경우만 포함)
+            .filter(progress -> progress.getCompletedLessons() < progress.getTotalLessons())
+            // 진행률을 기준으로 오름차순 정렬 (낮은 순으로)
+            .sorted(Comparator.comparingDouble(progress ->
+                (double) progress.getCompletedLessons() / progress.getTotalLessons()))
+            .toList();
 
         // 결과 반환
         return UserProgressDto.builder()
