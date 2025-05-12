@@ -108,6 +108,7 @@ public class PlanService {
                     .completedLessons(completedLessons)
                     .build();
             })
+            .filter(dto -> dto.getCompletedLessons() < dto.getTotalLessons())
             .toList();
     }
 
