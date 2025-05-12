@@ -27,7 +27,7 @@ public class UserController {
     @Operation(summary = "사용자 로그인")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
-        User user = userService.findOrCreateUser(request.getEmail(), request.getName());
+        User user = userService.findOrCreateUser(request);
         String token = jwtTokenProvider.createToken(user.getId());
         return ResponseEntity.ok(new LoginResponse(token));
     }
