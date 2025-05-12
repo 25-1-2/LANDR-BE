@@ -2,6 +2,7 @@ package com.landr.controller.home;
 
 import com.landr.controller.home.dto.HomeResponse;
 import com.landr.domain.user.User;
+import com.landr.service.lessonschedule.LessonScheduleService;
 import com.landr.service.schedule.ScheduleService;
 import com.landr.service.dto.DailyScheduleWithLessonsDto;
 import com.landr.service.dto.UserProgressDto;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class HomeController {
 
     private final ScheduleService scheduleService;
+    private final LessonScheduleService lessonScheduleService;
 
     @Operation(summary = "홈 화면 조회")
     @GetMapping()
