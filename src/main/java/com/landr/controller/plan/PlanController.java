@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -76,5 +77,15 @@ public class PlanController {
     ) {
         PlanDetailResponse planDetail = planService.getPlan(planId, user.getId());
         return ResponseEntity.ok(planDetail);
+    }
+
+    @Operation(summary = "계획 삭제")
+    @DeleteMapping("/{planId}")
+    public ResponseEntity<String> deletePlan(
+        @PathVariable Long planId,
+        @AuthenticationPrincipal User user
+    ) {
+        planService.deletePlan(planId, user.getId());
+        return ResponseEntity.ok("계획(" + planId + ")이 정상적으로 삭제되었습니다.");
     }
 }

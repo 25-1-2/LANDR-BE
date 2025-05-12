@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface PlanRepository extends JpaRepository<Plan, Long> {
 
-    Optional<Plan> findByIdAndUserId(Long id, Long userId);
+    Optional<Plan> findByIdAndUserIdAndIsDeletedFalse(Long id, Long userId);
 
     @Query("SELECT p FROM Plan p "
         + "JOIN FETCH p.lecture l "

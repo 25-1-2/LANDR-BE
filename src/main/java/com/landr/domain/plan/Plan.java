@@ -100,4 +100,8 @@ public class Plan {
     public void editLectureName(String lectureName) {
         this.lectureName = lectureName;
     }
+
+    public void delete() {
+        isDeleted = true;
+    }
 }
