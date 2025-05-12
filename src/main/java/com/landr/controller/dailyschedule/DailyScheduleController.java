@@ -23,7 +23,6 @@ public class DailyScheduleController {
 
     private final ScheduleService scheduleService;
 
-    // TODO: Swagger에 JWT 인증 추가
     @Operation(summary = "일일 스케줄 조회", description = "날짜 형식은 2025-04-01 형식을 지켜야 합니다.")
     @GetMapping
     public ResponseEntity<DailyScheduleWithLessonsDto> getDailySchedule(

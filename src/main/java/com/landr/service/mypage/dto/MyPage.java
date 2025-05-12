@@ -18,7 +18,7 @@ public class MyPage {
     private Integer todayCompletedLessonCount;
     private Integer completedLectureCount;
     private Integer studyStreak;
-    private LocalDate goalDate;
+    private Integer inProgressLectureCount;
     private List<CompletedPlanDto> completedPlanList;
     private List<SubjectAchievementDto> subjectAchievementList;
 }
