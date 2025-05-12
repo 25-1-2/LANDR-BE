@@ -177,7 +177,6 @@ public class PlanService {
         Plan plan = planRepository.findByIdAndUserIdAndIsDeletedFalse(planId, userId)
             .orElseThrow(() -> new ApiException(ExceptionType.PLAN_NOT_FOUND));
 
-        // 계획 삭제
-        plan.delete();
+        planRepository.delete(plan);
     }
 }
