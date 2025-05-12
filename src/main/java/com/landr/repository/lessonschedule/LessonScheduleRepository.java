@@ -112,4 +112,19 @@ public interface LessonScheduleRepository extends JpaRepository<LessonSchedule, 
         @Param("userId") Long userId,
         @Param("today") LocalDate today
     );
+
+    /**
+     * 특정 사용자의 특정 기간 내 모든 수업 일정을 조회합니다.
+     */
+    @Query("SELECT ls FROM LessonSchedule ls " +
+        "JOIN FETCH ls.dailySchedule ds " +
+        "JOIN FETCH ds.plan p " +
+        "WHERE p.user.id = :userId " +
+        "AND ds.date BETWEEN :startDate AND :endDate " +
+        "ORDER BY ds.date")
+    List<LessonSchedule> findLessonSchedulesByUserIdAndDateRange(
+        @Param("userId") Long userId,
+        @Param("startDate") LocalDate startDate,
+        @Param("endDate") LocalDate endDate
+    );
 }

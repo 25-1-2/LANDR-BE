@@ -1,7 +1,10 @@
 package com.landr.controller.home;
 
+import com.landr.controller.dday.dto.DDayDto;
 import com.landr.controller.home.dto.HomeResponse;
 import com.landr.domain.user.User;
+import com.landr.service.dday.DDayService;
+import com.landr.service.dto.WeeklyAchievementDto;
 import com.landr.service.lessonschedule.LessonScheduleService;
 import com.landr.service.schedule.ScheduleService;
 import com.landr.service.dto.DailyScheduleWithLessonsDto;
@@ -24,6 +27,7 @@ public class HomeController {
 
     private final ScheduleService scheduleService;
     private final LessonScheduleService lessonScheduleService;
+    private final DDayService dDayService;
 
     @Operation(summary = "홈 화면 조회")
     @GetMapping()
@@ -34,10 +38,16 @@ public class HomeController {
 
         UserProgressDto userProgress = scheduleService.getUserProgress(userId);
 
+        WeeklyAchievementDto weeklyAchievement = lessonScheduleService.getWeeklyAchievement(userId);
+
+        DDayDto dDay = dDayService.getOneUserDDay(userId);
+
         return ResponseEntity.ok(
             HomeResponse.builder()
                 .todaySchedule(dailySchedules)
                 .userProgress(userProgress)
+                .weeklyAchievement(weeklyAchievement)
+                .dDay(dDay)
                 .build()
         );
     }

@@ -8,6 +8,7 @@ import com.landr.domain.user.User;
 import com.landr.exception.ApiException;
 import com.landr.exception.ExceptionType;
 import com.landr.repository.dday.DDayRepository;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,5 +63,19 @@ public class DDayServiceImpl implements DDayService {
             .orElseThrow(() -> new ApiException(ExceptionType.DDAY_NOT_FOUND));
         dDay.isOwner(userId);
         dDayRepository.delete(dDay);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public DDayDto getOneUserDDay(Long userId) {
+        List<DDay> dDays = dDayRepository.findByUserId(userId);
+        if (dDays.isEmpty()) {
+            return null;
+        }
+
+        // dDays 리스트를 id 역순으로 정렬
+        dDays.sort((d1, d2) -> Long.compare(d2.getId(), d1.getId()));
+
+        return DDayDto.from(dDays.get(0));
     }
 }

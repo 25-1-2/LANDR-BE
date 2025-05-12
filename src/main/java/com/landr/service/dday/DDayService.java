@@ -25,4 +25,9 @@ public interface DDayService {
      * D-Day를 삭제합니다.
      */
     void deleteDDay(Long userId, Long dDayId);
+
+    /**
+     * User의 D-Day 1개를 조회합니다.
+     */
+    DDayDto getOneUserDDay(Long userId);
 }
