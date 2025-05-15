@@ -13,6 +13,9 @@ public enum ExceptionType {
 
     // Plan 관련 (에러 번호 1로 시작)
     PLAN_NOT_FOUND(40411, HttpStatus.NOT_FOUND, "해당 Plan을 찾을 수 없습니다."),
+    PLAN_ALL_LESSONS_COMPLETED(
+        40012, HttpStatus.BAD_REQUEST, "모든 강의가 이미 완료되었습니다."),
+    PLAN_END_DATE_PASSED(40013, HttpStatus.BAD_REQUEST, "계획의 종료일이 이미 지났습니다. 종료일을 업데이트한 후 다시 시도해주세요."),
 
     // 인증 관련(에러 번호 2로 시작)
     AUTHENTICATION_FAILED(40121, HttpStatus.UNAUTHORIZED, "인증에 실패했습니다."),
@@ -40,9 +43,9 @@ public enum ExceptionType {
     INVALID_USER_NAME(40471, HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 이름입니다."),
     USER_NOT_FOUND(40472, HttpStatus.BAD_REQUEST, "해당 사용자를 찾을 수 없습니다."),
 
-    // DDay 관련 (에러 번호 8로 시작)
+    // DDay 관련 (에러 번호 8로 시작),
     DDAY_NOT_FOUND(40481, HttpStatus.NOT_FOUND, "해당 D-Day를 찾을 수 없습니다."),
-    DDAY_OWNER_NOT_MATCH(40382, HttpStatus.FORBIDDEN, "해당 D-Day의 소유자가 아닙니다."), ;
+    DDAY_OWNER_NOT_MATCH(40382, HttpStatus.FORBIDDEN, "해당 D-Day의 소유자가 아닙니다.");
 
 
     private final int errorCode;    // errorCode는 5자리로 구성(3자리는 Http status code + 2자리 에러번호)

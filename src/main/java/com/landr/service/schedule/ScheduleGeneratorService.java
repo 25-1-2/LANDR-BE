@@ -6,9 +6,13 @@ import com.landr.domain.plan.Plan;
 import com.landr.domain.plan.PlanType;
 import com.landr.domain.schedule.DailySchedule;
 import com.landr.domain.schedule.LessonSchedule;
+import com.landr.exception.ApiException;
+import com.landr.exception.ExceptionType;
 import com.landr.repository.dailyschedule.DailyScheduleRepository;
 import com.landr.repository.lesson.LessonRepository;
 import com.landr.repository.lessonschedule.LessonScheduleRepository;
+import com.landr.repository.plan.PlanRepository;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +36,8 @@ public class ScheduleGeneratorService {
     private final LessonRepository lessonRepository;
     private final DailyScheduleRepository dailyScheduleRepository;
     private final LessonScheduleRepository lessonScheduleRepository;
+    private final PlanRepository planRepository;
+    private final EntityManager entityManager;
 
     /**
      * Plan에 대한 스케줄을 생성합니다.
@@ -59,6 +65,66 @@ public class ScheduleGeneratorService {
             plan.getId(), result.getDailySchedules().size(), result.getLessonSchedules().size());
 
         return result;
+    }
+
+    /**
+     * 특정 계획(Plan)의 미완료 강의(completed=false)에 대한 스케줄을 재생성합니다. 기존 스케줄은 모두 삭제되고, 미완료 강의만으로 새로운 스케줄이
+     * 생성됩니다.
+     *
+     * @param userId 사용자 ID
+     * @param planId 계획 ID
+     * @return 생성된 스케줄 정보
+     */
+    @Transactional
+    public ScheduleGenerationResult rescheduleIncompleteLessons(Long userId, Long planId) {
+        // 해당 계획이 사용자의 것인지 확인
+        Plan plan = planRepository.findByIdAndUserId(planId, userId)
+            .orElseThrow(() -> new ApiException(ExceptionType.PLAN_NOT_FOUND));
+
+        // 계획이 PERIOD 타입이고 종료일이 이미 지난 경우 확인
+        LocalDate today = LocalDate.now();
+        if (plan.getPlanType() == PlanType.PERIOD &&
+            (plan.getEndDate() == null || plan.getEndDate().isBefore(today))) {
+            throw new ApiException(ExceptionType.PLAN_END_DATE_PASSED,
+                "계획의 종료일이 이미 지났습니다. 종료일을 업데이트한 후 다시 시도해주세요.");
+        }
+
+        log.info("Plan {}에 대한 미완료 강의 재스케줄링 시작", planId);
+
+        // 완료되지 않은 LessonSchedule들을 찾습니다.
+        List<LessonSchedule> uncompletedLessonSchedules = lessonScheduleRepository.findUncompletedLessonSchedulesByPlanId(
+            plan.getId());
+        log.info("완료되지 않은 LessonSchedule 개수: {}", uncompletedLessonSchedules.size());
+
+        if (uncompletedLessonSchedules.isEmpty()) {
+            log.info("재스케줄링할 강의가 없습니다.");
+            return new ScheduleGenerationResult(Collections.emptyList(), Collections.emptyList());
+        }
+
+        // 완료되지 않은 Lesson들을 추출합니다.
+        List<Lesson> uncompletedLessons = uncompletedLessonSchedules.stream()
+            .map(LessonSchedule::getLesson)
+            .distinct()
+            .sorted(Comparator.comparing(Lesson::getOrder))
+            .toList();
+
+        log.info("재스케줄링할 Lesson 개수: {}", uncompletedLessons.size());
+
+        // 완료되지 않은 LessonSchedule이 있는 DailySchedule을 찾습니다.
+        List<DailySchedule> dailySchedulesToRemove = dailyScheduleRepository.findDailySchedulesWithUncompletedLessons(plan.getId());
+
+        // 완료되지 않은 LessonSchedule들을 삭제합니다.
+        lessonScheduleRepository.deleteAll(uncompletedLessonSchedules);
+
+        // 해당 DailySchedule들을 삭제합니다.
+        dailyScheduleRepository.deleteAll(dailySchedulesToRemove);
+
+        // 영속성 컨텍스트 클리어 및 초기화
+        entityManager.flush();
+        entityManager.clear();
+
+        // 완료되지 않은 Lesson들에 대해 오늘부터 새로운 일정을 생성합니다.
+        return buildSchedulesForLessonsFromToday(plan, uncompletedLessons);
     }
 
     /**

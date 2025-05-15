@@ -39,4 +39,8 @@ public class UserDevice {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
+
+    public void updateDeviceIdentifier(String fcmToken) {
+        this.deviceIdentifier = fcmToken;
+    }
 }

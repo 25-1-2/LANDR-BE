@@ -32,4 +32,10 @@ public interface DailyScheduleRepository extends JpaRepository<DailySchedule, Lo
         @Param("userId") Long userId,
         @Param("planId") Long planId
     );
+
+    @Query("SELECT DISTINCT ds FROM DailySchedule ds " +
+        "JOIN ds.plan p " +
+        "WHERE p.id = :planId " +
+        "AND EXISTS (SELECT 1 FROM LessonSchedule ls WHERE ls.dailySchedule = ds AND ls.completed = false)")
+    List<DailySchedule> findDailySchedulesWithUncompletedLessons(@Param("planId") Long planId);
 }
