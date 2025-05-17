@@ -196,6 +196,29 @@ public class ScheduleGeneratorService {
     }
 
     /**
+     * 특정 날짜부터 종료일까지 studyDays에 해당하는 날짜 목록을 계산합니다.
+     */
+    private List<LocalDate> calculateStudyDatesFromDate(Plan plan, LocalDate startDate, LocalDate endDate) {
+        List<LocalDate> studyDates = new ArrayList<>();
+        Set<DayOfWeek> studyDays = plan.getStudyDays();
+
+        if (endDate == null || studyDays.isEmpty()) {
+            return studyDates;
+        }
+
+        LocalDate currentDate = startDate;
+        while (!currentDate.isAfter(endDate)) {
+            DayOfWeek dayOfWeek = convertToDayOfWeek(currentDate.getDayOfWeek());
+            if (studyDays.contains(dayOfWeek)) {
+                studyDates.add(currentDate);
+            }
+            currentDate = currentDate.plusDays(1);
+        }
+
+        return studyDates;
+    }
+
+    /**
      * 강의 목록의 각 강의에 대해 playbackSpeed를 반영한 조정된 시간을 계산합니다.
      */
     private List<Integer> calculateAdjustedDurations(List<Lesson> lessons, float playbackSpeed) {
