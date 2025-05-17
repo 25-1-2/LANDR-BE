@@ -30,11 +30,12 @@ public class UserService {
                 return userRepository.save(newUser);
             });
 
-        UserDevice userDevice = userDeviceRepository.save(
-            UserDevice.builder()
-                .user(user)
-                .deviceIdentifier(request.getFcmToken())
-                .build());
+        UserDevice userDevice = userDeviceRepository.findByUserIdAndDeviceIdentifier(user.getId(), request.getFcmToken())
+            .orElseGet(() -> userDeviceRepository.save(
+                UserDevice.builder()
+                    .user(user)
+                    .deviceIdentifier(request.getFcmToken())
+                    .build()));
 
         log.info("User device saved: {}", userDevice);
         return user;
