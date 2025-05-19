@@ -30,17 +30,14 @@ public class UserService {
                 return userRepository.save(newUser);
             });
 
-        // device 정보 있으면 업데이트, 없으면 생성
-        UserDevice userDevice = userDeviceRepository.findByUserId(user.getId())
-            .orElseGet(() -> userDeviceRepository.save(
-                UserDevice.builder()
-                    .user(user)
-                    .deviceIdentifier(request.getFcmToken())
-                    .build()
-            ));
-        userDevice.updateDeviceIdentifier(request.getFcmToken());
+        UserDevice userDevice = UserDevice.builder()
+            .user(user)
+            .deviceIdentifier(request.getFcmToken())
+            .build();
 
+        userDeviceRepository.save(userDevice);
         log.info("User device saved: {}", userDevice);
+
         return user;
     }
 

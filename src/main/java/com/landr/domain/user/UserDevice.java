@@ -16,9 +16,7 @@ import lombok.ToString;
 @Getter
 @ToString
 @Entity
-@Table(name = "user_devices", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"user_id", "device_identifier"})
-})
+@Table(name = "user_devices")
 public class UserDevice {
 
     @Id
