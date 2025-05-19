@@ -110,21 +110,39 @@ public class ScheduleGeneratorService {
 
         log.info("재스케줄링할 Lesson 개수: {}", uncompletedLessons.size());
 
-        // 완료되지 않은 LessonSchedule이 있는 DailySchedule을 찾습니다.
-        List<DailySchedule> dailySchedulesToRemove = dailyScheduleRepository.findDailySchedulesWithUncompletedLessons(plan.getId());
+        // 미완료 LessonSchedule의 DailySchedule ID를 추출
+        Set<Long> dailyScheduleIds = uncompletedLessonSchedules.stream()
+            .map(ls -> ls.getDailySchedule().getId())
+            .collect(Collectors.toSet());
 
         // 완료되지 않은 LessonSchedule들을 삭제합니다.
         lessonScheduleRepository.deleteAll(uncompletedLessonSchedules);
 
-        // 해당 DailySchedule들을 삭제합니다.
-        dailyScheduleRepository.deleteAll(dailySchedulesToRemove);
+        // ID 기반으로 남아있는 LessonSchedule이 없는 DailySchedule ID 찾기
+        List<Long> emptyDailyScheduleIds = dailyScheduleIds.stream()
+            .filter(dsId -> lessonScheduleRepository.countByDailyScheduleId(dsId) == 0)
+            .collect(Collectors.toList());
+
+        // 비어있는 DailySchedule 삭제 (벌크 삭제)
+        if (!emptyDailyScheduleIds.isEmpty()) {
+            log.info("비어있는 DailySchedule {} 개 삭제", emptyDailyScheduleIds.size());
+            dailyScheduleRepository.deleteAllByIdInBatch(emptyDailyScheduleIds);
+        }
+
+        // 완료되지 않은 Lesson들에 대해 오늘부터 새로운 일정을 생성합니다.
+        ScheduleGenerationResult result = buildSchedulesForLessonsFromToday(plan,
+            uncompletedLessons);
 
         // 영속성 컨텍스트 클리어 및 초기화
         entityManager.flush();
         entityManager.clear();
 
-        // 완료되지 않은 Lesson들에 대해 오늘부터 새로운 일정을 생성합니다.
-        return buildSchedulesForLessonsFromToday(plan, uncompletedLessons);
+        dailyScheduleRepository.saveAll(result.getDailySchedules());
+        lessonScheduleRepository.saveAll(result.getLessonSchedules());
+        log.info("Plan {}에 대한 재스케줄 생성 완료: 일일스케줄 {}개, 강의스케줄 {}개",
+            plan.getId(), result.getDailySchedules().size(), result.getLessonSchedules().size());
+
+        return result;
     }
 
     /**
@@ -198,7 +216,8 @@ public class ScheduleGeneratorService {
     /**
      * 특정 날짜부터 종료일까지 studyDays에 해당하는 날짜 목록을 계산합니다.
      */
-    private List<LocalDate> calculateStudyDatesFromDate(Plan plan, LocalDate startDate, LocalDate endDate) {
+    private List<LocalDate> calculateStudyDatesFromDate(Plan plan, LocalDate startDate,
+        LocalDate endDate) {
         List<LocalDate> studyDates = new ArrayList<>();
         Set<DayOfWeek> studyDays = plan.getStudyDays();
 
@@ -476,6 +495,46 @@ public class ScheduleGeneratorService {
             .displayOrder(displayOrder)
             .completed(false)
             .build();
+    }
+
+
+    /**
+     * 오늘 날짜부터 강의들에 대한 새로운 일정을 생성합니다.
+     */
+    private ScheduleGenerationResult buildSchedulesForLessonsFromToday(Plan plan,
+        List<Lesson> lessons) {
+        // 강의별 조정된 시간 계산 (재생 속도 반영)
+        List<Integer> adjustedDurations = calculateAdjustedDurations(lessons,
+            plan.getPlaybackSpeed());
+
+        LocalDate today = LocalDate.now();
+
+        // 계획 타입에 따라 강의 배분
+        if (plan.getPlanType() == PlanType.PERIOD) {
+            // PERIOD 타입인 경우, 오늘부터 endDate까지의 studyDays 날짜 계산
+            LocalDate endDate = plan.getEndDate();
+
+            // endDate가 없거나 과거인 경우 재스케줄링하지 않음
+            if (endDate == null || endDate.isBefore(today)) {
+                log.warn("Plan {}의 종료일({})이 오늘({})보다 이전이거나 설정되지 않았습니다. 재스케줄링을 진행하지 않습니다.",
+                    plan.getId(), endDate, today);
+                throw new ApiException(ExceptionType.PLAN_END_DATE_PASSED,
+                    "계획의 종료일이 이미 지났습니다. 종료일을 업데이트한 후 다시 시도해주세요.");
+            }
+
+            List<LocalDate> studyDates = calculateStudyDatesFromDate(plan, today, endDate);
+
+            if (studyDates.isEmpty()) {
+                log.warn("계획 {}에 대한 공부 가능 날짜가 없습니다.", plan.getId());
+                return new ScheduleGenerationResult(Collections.emptyList(),
+                    Collections.emptyList());
+            }
+
+            return distributeLessonsByPeriod(plan, lessons, adjustedDurations, studyDates);
+        } else {
+            // TIME 타입은 오늘부터 studyDays와 dailyTime에 맞춰 배분
+            return distributeLessonsByTime(plan, lessons, adjustedDurations, null);
+        }
     }
 
     /**

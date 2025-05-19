@@ -134,4 +134,7 @@ public interface LessonScheduleRepository extends JpaRepository<LessonSchedule, 
         "AND ls.completed = false " +
         "ORDER BY ls.lesson.order")
     List<LessonSchedule> findUncompletedLessonSchedulesByPlanId(@Param("planId") Long planId);
+
+    @Query("SELECT COUNT(ls) FROM LessonSchedule ls WHERE ls.dailySchedule.id = :dailyScheduleId")
+    long countByDailyScheduleId(@Param("dailyScheduleId") Long dailyScheduleId);
 }
