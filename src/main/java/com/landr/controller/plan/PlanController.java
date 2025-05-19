@@ -8,6 +8,8 @@ import com.landr.domain.user.User;
 import com.landr.service.dto.PlanDetailResponse;
 import com.landr.service.dto.PlanSummaryDto;
 import com.landr.service.plan.PlanService;
+import com.landr.service.schedule.ScheduleGeneratorService;
+import com.landr.service.schedule.ScheduleGeneratorService.ScheduleGenerationResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PlanController {
 
     private final PlanService planService;
+    private final ScheduleGeneratorService scheduleGeneratorService;
 
     @Operation(summary = "강의 별명 수정")
     @PatchMapping("/{planId}/lecture-name")
@@ -86,5 +89,16 @@ public class PlanController {
     ) {
         planService.deletePlan(planId, user.getId());
         return ResponseEntity.ok("계획(" + planId + ")이 정상적으로 삭제되었습니다.");
+    }
+
+    @Operation(summary = "계획 재스케줄링")
+    @PostMapping("/{planId}/reschedule")
+    public ResponseEntity<ScheduleGenerationResult> reschedulePlan(
+        @PathVariable Long planId,
+        @AuthenticationPrincipal User user
+    ) {
+        ScheduleGenerationResult scheduleGenerationResult = scheduleGeneratorService.rescheduleIncompleteLessons(
+            user.getId(), planId);
+        return ResponseEntity.ok(scheduleGenerationResult);
     }
 }

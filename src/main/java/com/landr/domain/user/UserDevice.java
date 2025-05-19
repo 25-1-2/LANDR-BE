@@ -16,9 +16,7 @@ import lombok.ToString;
 @Getter
 @ToString
 @Entity
-@Table(name = "user_devices", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"user_id", "device_identifier"})
-})
+@Table(name = "user_devices")
 public class UserDevice {
 
     @Id
@@ -38,5 +36,9 @@ public class UserDevice {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+    }
+
+    public void updateDeviceIdentifier(String fcmToken) {
+        this.deviceIdentifier = fcmToken;
     }
 }
