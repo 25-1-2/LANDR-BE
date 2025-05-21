@@ -127,4 +127,14 @@ public interface LessonScheduleRepository extends JpaRepository<LessonSchedule, 
         @Param("startDate") LocalDate startDate,
         @Param("endDate") LocalDate endDate
     );
+
+    @Query("SELECT ls FROM LessonSchedule ls " +
+        "JOIN ls.dailySchedule ds " +
+        "WHERE ds.plan.id = :planId " +
+        "AND ls.completed = false " +
+        "ORDER BY ls.lesson.order")
+    List<LessonSchedule> findUncompletedLessonSchedulesByPlanId(@Param("planId") Long planId);
+
+    @Query("SELECT COUNT(ls) FROM LessonSchedule ls WHERE ls.dailySchedule.id = :dailyScheduleId")
+    long countByDailyScheduleId(@Param("dailyScheduleId") Long dailyScheduleId);
 }
