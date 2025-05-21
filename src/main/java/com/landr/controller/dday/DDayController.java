@@ -1,5 +1,6 @@
 package com.landr.controller.dday;
 
+import com.landr.controller.CommonResponse;
 import com.landr.controller.dday.dto.CreateDDayRequest;
 import com.landr.controller.dday.dto.DDayDto;
 import com.landr.controller.dday.dto.UpdateDDayRequest;
@@ -55,11 +56,15 @@ public class DDayController {
 
     @Operation(summary = "D-Day 삭제")
     @DeleteMapping("/{dDayId}")
-    public ResponseEntity<String> deleteDDay(
+    public ResponseEntity<CommonResponse> deleteDDay(
         @PathVariable Long dDayId,
         @AuthenticationPrincipal User user
     ) {
         dDayService.deleteDDay(user.getId(), dDayId);
-        return ResponseEntity.ok("D-Day(" + dDayId +")가 삭제되었습니다.");
+        return ResponseEntity.ok(
+            CommonResponse.builder()
+                .message("D-Day(" + dDayId +")가 삭제되었습니다.")
+                .build()
+        );
     }
 }

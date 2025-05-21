@@ -1,5 +1,6 @@
 package com.landr.controller.plan;
 
+import com.landr.controller.CommonResponse;
 import com.landr.controller.plan.dto.CreatePlanRequest;
 import com.landr.controller.plan.dto.EditLectureNameRequest;
 import com.landr.controller.plan.dto.EditLectureNameResponse;
@@ -80,11 +81,15 @@ public class PlanController {
 
     @Operation(summary = "계획 삭제")
     @DeleteMapping("/{planId}")
-    public ResponseEntity<String> deletePlan(
+    public ResponseEntity<CommonResponse> deletePlan(
         @PathVariable Long planId,
         @AuthenticationPrincipal User user
     ) {
         planService.deletePlan(planId, user.getId());
-        return ResponseEntity.ok("계획(" + planId + ")이 정상적으로 삭제되었습니다.");
+        return ResponseEntity.ok(
+            CommonResponse.builder()
+                .message("계획(" + planId + ")이 정상적으로 삭제되었습니다.")
+                .build()
+        );
     }
 }
