@@ -4,7 +4,6 @@ import com.landr.controller.CommonResponse;
 import com.landr.controller.plan.dto.CreatePlanRequest;
 import com.landr.controller.plan.dto.EditLectureNameRequest;
 import com.landr.controller.plan.dto.EditLectureNameResponse;
-import com.landr.domain.plan.Plan;
 import com.landr.domain.user.User;
 import com.landr.service.dto.PlanDetailResponse;
 import com.landr.service.dto.PlanSummaryDto;
@@ -58,11 +57,14 @@ public class PlanController {
 
     @Operation(summary = "계획 생성")
     @PostMapping
-    public ResponseEntity<Plan> createPlan(
+    public ResponseEntity<CommonResponse> createPlan(
         @RequestBody @Valid CreatePlanRequest request,
         @AuthenticationPrincipal User user
     ) {
-        return ResponseEntity.ok(planService.createPlan(request, user));
+        planService.createPlan(request, user);
+        return ResponseEntity.ok(CommonResponse.builder().message(
+            "계획이 정상적으로 생성되었습니다."
+        ).build());
     }
 
     @Operation(summary = "계획 목록 조회(나의 강의실)")
