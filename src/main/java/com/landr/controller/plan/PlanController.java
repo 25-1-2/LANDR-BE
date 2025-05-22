@@ -28,8 +28,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Slf4j
 @RestController
+@Slf4j
 @AllArgsConstructor
 @RequestMapping("/v1/plans")
 @Tag(name = "Plan", description = "Plan 관련 API")
