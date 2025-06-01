@@ -14,7 +14,7 @@ public class StudyGroupDetailResponse {
     private Long studyGroupId;
     private String name;
     private String inviteCode;
-    private boolean isLeader;
+    private Long leaderId;
     private String leaderName;
     private String lectureName;
     private List<StudyGroupMemberDto> members;
