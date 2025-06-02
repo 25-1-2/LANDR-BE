@@ -38,3 +38,17 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: 2592000000
 # 30 days in milliseconds (30 * 24 * 60 * 60 * 1000)
+
+# OpenAI 설정
+openai:
+  api-key: ${OPENAI_API_KEY:your-openai-api-key}
+  model: gpt-3.5-turbo
+  base-url: https://api.openai.com/v1
+  max-tokens: 800
+  temperature: 0.3
+
+# 로깅 설정
+logging:
+  level:
+    com.landr.external.gpt: DEBUG
+    com.landr.service.recommend: DEBUG
