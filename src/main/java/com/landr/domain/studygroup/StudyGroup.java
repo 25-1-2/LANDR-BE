@@ -52,4 +52,12 @@ public class StudyGroup {
     public boolean isLeader(Long userId) {
         return this.leader.getId().equals(userId);
     }
+
+    public void updateLeader(User newLeader) {
+        if (newLeader == null) {
+            throw new IllegalArgumentException("새로운 리더는 null일 수 없습니다.");
+        }
+
+        this.leader = newLeader;
+    }
 }

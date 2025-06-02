@@ -190,6 +190,44 @@ public class StudyGroupServiceImpl implements StudyGroupService {
         planRepository.delete(member.getPlan());
     }
 
+    @Override
+    public void deleteStudyGroup(Long studyGroupId, User user) {
+        StudyGroup studyGroup = studyGroupRepository.findById(studyGroupId)
+            .orElseThrow(() -> new ApiException(ExceptionType.STUDY_GROUP_NOT_FOUND));
+
+        // 방장인지 확인
+        if (!studyGroup.isLeader(user.getId())) {
+            throw new ApiException(ExceptionType.STUDY_GROUP_NOT_LEADER);
+        }
+
+        // 스터디 그룹의 모든 멤버 제거(각 멤버의 계획은 유지)
+        List<StudyGroupMember> members = studyGroupMemberRepository.findByStudyGroupId(studyGroupId);
+        studyGroupMemberRepository.deleteAll(members);
+
+        // 스터디 그룹 삭제
+        studyGroupRepository.delete(studyGroup);
+    }
+
+    @Override
+    public void transferLeader(Long studyGroupId, Long newLeaderId, User user) {
+        StudyGroup studyGroup = studyGroupRepository.findById(studyGroupId)
+            .orElseThrow(() -> new ApiException(ExceptionType.STUDY_GROUP_NOT_FOUND));
+
+        // 방장인지 확인
+        if (!studyGroup.isLeader(user.getId())) {
+            throw new ApiException(ExceptionType.STUDY_GROUP_NOT_LEADER);
+        }
+
+        // 새로운 방장이 그룹의 멤버인지 확인
+        if (!studyGroupMemberRepository.existsByStudyGroupIdAndUserId(studyGroupId, newLeaderId)) {
+            throw new ApiException(ExceptionType.USER_NOT_FOUND, "새로운 방장은 이 스터디 그룹의 멤버가 아닙니다.");
+        }
+
+        // 방장 변경
+        User newLeader = User.builder().id(newLeaderId).build();
+        studyGroup.updateLeader(newLeader);
+    }
+
     private String generateUniqueInviteCode() {
         Random random = new Random();
         String inviteCode;

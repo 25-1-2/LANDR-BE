@@ -29,4 +29,8 @@ public interface StudyGroupService {
      * 스터디 그룹에서 멤버를 추방합니다.
      */
     void kickMember(Long studyGroupId, Long targetUserId, User user);
+
+    void deleteStudyGroup(Long studyGroupId, User user);
+
+    void transferLeader(Long studyGroupId, Long newLeaderId, User user);
 }

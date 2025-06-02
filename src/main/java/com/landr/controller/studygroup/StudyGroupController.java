@@ -94,4 +94,33 @@ public class StudyGroupController {
                 .build()
         );
     }
+
+    @Operation(summary = "스터디 그룹 삭제", description = "스터디 그룹을 삭제합니다. (방장만 가능)")
+    @DeleteMapping("/{studyGroupId}")
+    public ResponseEntity<CommonResponse> deleteStudyGroup(
+        @PathVariable Long studyGroupId,
+        @AuthenticationPrincipal User user
+    ) {
+        studyGroupService.deleteStudyGroup(studyGroupId, user);
+        return ResponseEntity.ok(
+            CommonResponse.builder()
+                .message("스터디 그룹이 삭제되었습니다.")
+                .build()
+        );
+    }
+
+    @Operation(summary = "방장 위임", description = "스터디 그룹의 방장을 다른 멤버로 위임합니다. (방장만 가능)")
+    @PatchMapping("/{studyGroupId}/leader/{newLeaderId}")
+    public ResponseEntity<CommonResponse> transferLeader(
+        @PathVariable Long studyGroupId,
+        @PathVariable Long newLeaderId,
+        @AuthenticationPrincipal User user
+    ) {
+        studyGroupService.transferLeader(studyGroupId, newLeaderId, user);
+        return ResponseEntity.ok(
+            CommonResponse.builder()
+                .message("방장이 성공적으로 변경되었습니다.")
+                .build()
+        );
+    }
 }
