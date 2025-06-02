@@ -1,17 +1,25 @@
 package com.landr.domain.lecture;
 
-import jakarta.persistence.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Entity
 @Table(name = "lectures")
 @Getter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class Lecture {
 
     @Id
@@ -36,6 +44,9 @@ public class Lecture {
 
     @Column(name = "total_duration", nullable = false)
     private int totalDuration;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     private String tag;
 }

@@ -18,13 +18,19 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "daily_schedules", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"plan_id", "date"})
 })
 @Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class DailySchedule {
 
     @Id
@@ -47,4 +53,15 @@ public class DailySchedule {
 
     @Column(name = "total_duration", nullable = false)
     private int totalDuration;
+
+    @Override
+    public String toString() {
+        return "DailySchedule{" +
+            "id=" + id +
+            ", date=" + date +
+            ", dayOfWeek=" + dayOfWeek +
+            ", totalLessons=" + totalLessons +
+            ", totalDuration=" + totalDuration +
+            '}';
+    }
 }

@@ -1,17 +1,22 @@
 package com.landr.domain.user;
 
+
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-@Entity
-@Table(name = "user_devices", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "device_identifier"})
-})
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
-@Setter
+@ToString
+@Entity
+@Table(name = "user_devices")
 public class UserDevice {
 
     @Id
@@ -31,5 +36,9 @@ public class UserDevice {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+    }
+
+    public void updateDeviceIdentifier(String fcmToken) {
+        this.deviceIdentifier = fcmToken;
     }
 }

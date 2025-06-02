@@ -1,7 +1,7 @@
 package com.landr.service.recommend;
 
-import com.landr.controller.dto.LectureRecommendRequest;
-import com.landr.controller.dto.LectureRecommendResponse;
+import com.landr.controller.user.dto.LectureRecommendRequest;
+import com.landr.controller.user.dto.LectureRecommendResponse;
 import com.landr.domain.lecture.Lecture;
 import com.landr.repository.recommend.LectureRepository;
 

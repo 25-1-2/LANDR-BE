@@ -1,6 +1,8 @@
 package com.landr.controller;
 
-import com.landr.controller.dto.*;
+
+import com.landr.controller.user.dto.LectureRecommendRequest;
+import com.landr.controller.user.dto.LectureRecommendResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

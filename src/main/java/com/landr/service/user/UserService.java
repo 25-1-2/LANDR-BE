@@ -1,60 +1,50 @@
 package com.landr.service.user;
 
+import com.landr.controller.user.dto.LoginRequest;
 import com.landr.domain.user.User;
 import com.landr.domain.user.UserDevice;
-import com.landr.repository.user.UserDeviceRepository;
+import com.landr.exception.ApiException;
+import com.landr.exception.ExceptionType;
 import com.landr.repository.user.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.landr.repository.userdevice.UserDeviceRepository;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
+@AllArgsConstructor
+@Slf4j
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private UserDeviceRepository userDeviceRepository;
+    private final UserRepository userRepository;
+    private final UserDeviceRepository userDeviceRepository;
 
     @Transactional
-    public User findOrCreateUser(String email, String name, String fcmToken) {
-        User user = userRepository.findByEmail(email)
-                .orElseGet(() -> {
-                    User newUser = User.builder()
-                            .email(email)
-                            .name(name)
-                            .provider("GOOGLE") // 제공자 정보 추가
-                            .build();
-                    return userRepository.save(newUser);
-                });
+    public User findOrCreateUser(LoginRequest request) {
+        User user= userRepository.findByEmail(request.getEmail())
+            .orElseGet(() -> {
+                User newUser = new User();
+                newUser.setEmail(request.getEmail());
+                newUser.setName(request.getName());
+                return userRepository.save(newUser);
+            });
 
-        // FCM 토큰이 제공되었다면 디바이스 정보 저장
-        if (fcmToken != null && !fcmToken.isEmpty()) {
-            saveOrUpdateUserDevice(user, fcmToken);
-        }
+        UserDevice userDevice = UserDevice.builder()
+            .user(user)
+            .deviceIdentifier(request.getFcmToken())
+            .build();
+
+        userDeviceRepository.save(userDevice);
+        log.info("User device saved: {}", userDevice);
 
         return user;
     }
 
     @Transactional
-    public void saveOrUpdateUserDevice(User user, String deviceIdentifier) {
-        // 기존 디바이스 찾기
-        Optional<UserDevice> existingDevice = userDeviceRepository
-                .findByUserIdAndDeviceIdentifier(user.getId(), deviceIdentifier);
-
-        if (existingDevice.isEmpty()) {
-            // 새 디바이스 등록
-            UserDevice userDevice = new UserDevice();
-            userDevice.setUser(user);
-            userDevice.setDeviceIdentifier(deviceIdentifier);
-            userDeviceRepository.save(userDevice);
-        }
-    }
-
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
+    public void updateUserName(Long userId, String newName) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ApiException(ExceptionType.USER_NOT_FOUND));
+        user.updateName(newName);
     }
 }

@@ -1,6 +1,6 @@
 package com.landr.service.recommend;
 
-import com.landr.controller.dto.LectureRecommendResponse;
+import com.landr.controller.user.dto.LectureRecommendResponse;
 import com.landr.domain.lecture.Lecture;
 import org.springframework.stereotype.Component;
 
