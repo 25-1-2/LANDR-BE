@@ -18,4 +18,8 @@ public interface StudyGroupMemberRepository extends JpaRepository<StudyGroupMemb
     boolean existsByStudyGroupIdAndUserId(Long studyGroupId, Long userId);
 
     void deleteByStudyGroupIdAndUserId(Long studyGroupId, Long userId);
+
+    // 특정 유저의 모든 스터디 그룹 계획 ID 조회
+    @Query("SELECT sgm.plan.id FROM StudyGroupMember sgm WHERE sgm.user.id = :userId")
+    List<Long> findPlanIdsByUserId(Long userId);
 }
