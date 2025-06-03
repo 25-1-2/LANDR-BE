@@ -15,13 +15,16 @@ import com.landr.repository.lecture.LectureRepository;
 import com.landr.repository.lesson.LessonRepository;
 import com.landr.repository.lessonschedule.LessonScheduleRepository;
 import com.landr.repository.plan.PlanRepository;
+import com.landr.repository.studygroup.StudyGroupMemberRepository;
 import com.landr.service.dto.DailyScheduleDto;
 import com.landr.service.dto.LessonScheduleDto;
 import com.landr.service.dto.PlanDetailResponse;
 import com.landr.service.dto.PlanSummaryDto;
 import com.landr.service.schedule.ScheduleGeneratorService;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +42,8 @@ public class PlanService {
     private final LessonScheduleRepository lessonScheduleRepository;
     private final DailyScheduleRepository dailyScheduleRepository;
     private final ScheduleGeneratorService scheduleGeneratorService;
+    private final StudyGroupMemberRepository studyGroupMemberRepository;
+
 
     @Transactional
     public String editLectureName(EditLectureNameRequest req, Long planId, Long memberId) {
@@ -94,10 +99,17 @@ public class PlanService {
             return List.of();
         }
 
+        Set<Long> studyGroupPlanIds = new HashSet<>(studyGroupMemberRepository.findPlanIdsByUserId(userId));
+        log.info("studyGroupPlanIds: {}", studyGroupPlanIds);
+
         return plans.stream()
             .map(plan -> {
                 Long completedLessons = lessonScheduleRepository.countCompletedLessonSchedulesByPlanId(
                     plan.getId());
+
+                // 해당 계획이 스터디 그룹의 일부인지 확인
+                boolean isStudyGroup = studyGroupPlanIds.contains(plan.getId());
+
                 return PlanSummaryDto.builder()
                     .planId(plan.getId())
                     .lectureTitle(plan.getLecture().getTitle())
@@ -106,6 +118,7 @@ public class PlanService {
                     .totalLessons(
                         plan.getEndLesson().getOrder() - plan.getStartLesson().getOrder() + 1)
                     .completedLessons(completedLessons)
+                    .isStudyGroup(isStudyGroup)
                     .build();
             })
             .filter(dto -> dto.getCompletedLessons() < dto.getTotalLessons())
