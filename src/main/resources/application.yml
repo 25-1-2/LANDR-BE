@@ -52,3 +52,8 @@ logging:
   level:
     com.landr.external.gpt: DEBUG
     com.landr.service.recommend: DEBUG
+
+fcm:
+  secret-key: ${FIREBASE_SECRET_KEY}
+  scheduler:
+    status: true

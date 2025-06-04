@@ -18,4 +18,6 @@ public class PlanSummaryDto {
     private Platform platform;
     private int totalLessons;
     private long completedLessons;
+    private boolean isStudyGroup;
+    private Long studyGroupId;
 }

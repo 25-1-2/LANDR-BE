@@ -137,4 +137,16 @@ public interface LessonScheduleRepository extends JpaRepository<LessonSchedule, 
 
     @Query("SELECT COUNT(ls) FROM LessonSchedule ls WHERE ls.dailySchedule.id = :dailyScheduleId")
     long countByDailyScheduleId(@Param("dailyScheduleId") Long dailyScheduleId);
+
+    /**
+     * 특정 날짜의 모든 사용자 레슨 스케줄을 조회합니다.
+     */
+    @Query("SELECT ls FROM LessonSchedule ls " +
+        "JOIN FETCH ls.dailySchedule ds " +
+        "JOIN FETCH ds.plan p " +
+        "JOIN FETCH p.user u " +
+        "WHERE ds.date = :date " +
+        "ORDER BY u.id, ls.displayOrder")
+    List<LessonSchedule> findTodayLessonSchedules(@Param("date") LocalDate date);
+
 }
