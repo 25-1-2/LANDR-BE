@@ -1,12 +1,12 @@
 package com.landr.service.mypage.dto;
 
 import com.landr.service.dto.CompletedPlanDto;
-import java.time.LocalDate;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Getter
 @Builder
