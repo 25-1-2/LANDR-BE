@@ -33,6 +33,14 @@ public interface DailyScheduleRepository extends JpaRepository<DailySchedule, Lo
         @Param("planId") Long planId
     );
 
+    /**
+     * 특정 계획에 속한 모든 일정을 조회합니다.
+     */
+    @Query("SELECT ds FROM DailySchedule ds " +
+        "JOIN ds.plan p " +
+        "WHERE p.id = :planId")
+    List<DailySchedule> findByPlanId(@Param("planId") Long planId);
+
     @Query("SELECT DISTINCT ds FROM DailySchedule ds " +
         "JOIN ds.plan p " +
         "WHERE p.id = :planId " +

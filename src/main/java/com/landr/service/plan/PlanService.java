@@ -140,8 +140,7 @@ public class PlanService {
             .orElseThrow(() -> new ApiException(ExceptionType.PLAN_NOT_FOUND));
 
         // 일별 일정 목록 조회
-        List<DailySchedule> dailySchedules = dailyScheduleRepository.findByUserIdAndPlanId(userId,
-            planId);
+        List<DailySchedule> dailySchedules = dailyScheduleRepository.findByPlanId(planId);
         log.info("dailySchedules: {}", dailySchedules);
 
         if (dailySchedules.isEmpty()) {
