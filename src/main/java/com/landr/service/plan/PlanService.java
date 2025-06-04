@@ -99,7 +99,8 @@ public class PlanService {
             return List.of();
         }
 
-        Set<Long> studyGroupPlanIds = new HashSet<>(studyGroupMemberRepository.findPlanIdsByUserId(userId));
+        Set<Long> studyGroupPlanIds = new HashSet<>(
+            studyGroupMemberRepository.findPlanIdsByUserId(userId));
         log.info("studyGroupPlanIds: {}", studyGroupPlanIds);
 
         return plans.stream()
@@ -109,6 +110,12 @@ public class PlanService {
 
                 // 해당 계획이 스터디 그룹의 일부인지 확인
                 boolean isStudyGroup = studyGroupPlanIds.contains(plan.getId());
+                Long studyGroupId = null;
+                if (isStudyGroup) {
+                    studyGroupId = studyGroupMemberRepository
+                        .findStudyGroupIdByPlanId(plan.getId())
+                        .orElse(null);
+                }
 
                 return PlanSummaryDto.builder()
                     .planId(plan.getId())
@@ -119,6 +126,7 @@ public class PlanService {
                         plan.getEndLesson().getOrder() - plan.getStartLesson().getOrder() + 1)
                     .completedLessons(completedLessons)
                     .isStudyGroup(isStudyGroup)
+                    .studyGroupId(studyGroupId)
                     .build();
             })
             .filter(dto -> dto.getCompletedLessons() < dto.getTotalLessons())
