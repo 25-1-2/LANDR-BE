@@ -136,7 +136,7 @@ public class PlanService {
     @Transactional(readOnly = true)
     public PlanDetailResponse getPlan(Long planId, Long userId) {
         // 해당 계획 조회
-        Plan plan = planRepository.findByIdAndUserId(planId, userId)
+        Plan plan = planRepository.findById(planId)
             .orElseThrow(() -> new ApiException(ExceptionType.PLAN_NOT_FOUND));
 
         // 일별 일정 목록 조회
