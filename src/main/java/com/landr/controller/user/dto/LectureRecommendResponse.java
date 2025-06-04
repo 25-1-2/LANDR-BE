@@ -14,6 +14,8 @@ public class LectureRecommendResponse {
     private String teacher;
     private String url;
     private String description;
+    private String tag;
+    private Integer totalLessons;
     private Double recommendScore;
     private String recommendReason;
     private String difficulty;
