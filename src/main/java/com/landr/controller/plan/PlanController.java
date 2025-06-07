@@ -9,7 +9,6 @@ import com.landr.service.dto.PlanDetailResponse;
 import com.landr.service.dto.PlanSummaryDto;
 import com.landr.service.plan.PlanService;
 import com.landr.service.schedule.ScheduleGeneratorService;
-import com.landr.service.schedule.ScheduleGeneratorService.ScheduleGenerationResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -18,7 +17,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -101,13 +99,16 @@ public class PlanController {
 
     @Operation(summary = "계획 재스케줄링")
     @PostMapping("/{planId}/reschedule")
-    @Transactional
-    public ResponseEntity<ScheduleGenerationResult> reschedulePlan(
+    public ResponseEntity<CommonResponse> reschedulePlan(
         @PathVariable Long planId,
         @AuthenticationPrincipal User user
     ) {
-        ScheduleGenerationResult scheduleGenerationResult = scheduleGeneratorService.rescheduleIncompleteLessons(
+        scheduleGeneratorService.rescheduleIncompleteLessons(
             user.getId(), planId);
-        return ResponseEntity.ok(scheduleGenerationResult);
+        return ResponseEntity.ok(
+            CommonResponse.builder()
+                .message("계획(" + planId + ")이 정상적으로 재스케줄링되었습니다.")
+                .build()
+        );
     }
 }

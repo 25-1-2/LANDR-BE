@@ -14,6 +14,7 @@ import com.landr.repository.lessonschedule.LessonScheduleRepository;
 import com.landr.repository.plan.PlanRepository;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -68,15 +69,16 @@ public class ScheduleGeneratorService {
     }
 
     /**
-     * 특정 계획(Plan)의 미완료 강의(completed=false)에 대한 스케줄을 재생성합니다. 기존 스케줄은 모두 삭제되고, 미완료 강의만으로 새로운 스케줄이
-     * 생성됩니다.
+     * 특정 계획(Plan)의 모든 스케줄을 재생성합니다.
+     * - completed = true인 강의들은 updatedAt 날짜 기준으로 재배치
+     * - completed = false인 강의들은 오늘부터 재스케줄링
      *
      * @param userId 사용자 ID
      * @param planId 계획 ID
      * @return 생성된 스케줄 정보
      */
     @Transactional
-    public ScheduleGenerationResult rescheduleIncompleteLessons(Long userId, Long planId) {
+    public void rescheduleIncompleteLessons(Long userId, Long planId) {
         // 해당 계획이 사용자의 것인지 확인
         Plan plan = planRepository.findByIdAndUserId(planId, userId)
             .orElseThrow(() -> new ApiException(ExceptionType.PLAN_NOT_FOUND));
@@ -89,137 +91,159 @@ public class ScheduleGeneratorService {
                 "계획의 종료일이 이미 지났습니다. 종료일을 업데이트한 후 다시 시도해주세요.");
         }
 
-        log.info("Plan {}에 대한 미완료 강의 재스케줄링 시작", planId);
+        log.info("Plan {}에 대한 전체 스케줄 재생성 시작", planId);
 
-        // 해당 계획의 모든 LessonSchedule들을 조회
+        // 해당 계획의 모든 LessonSchedule 조회
         List<LessonSchedule> allLessonSchedules = lessonScheduleRepository.findByPlanIdAndUserId(userId, planId);
 
         if (allLessonSchedules.isEmpty()) {
             log.info("재스케줄링할 강의가 없습니다.");
-            return new ScheduleGenerationResult(Collections.emptyList(), Collections.emptyList());
+            return;
         }
 
-        // 1. completed=false인 미완료 강의들
+        // completed 상태별로 분류
+        List<LessonSchedule> completedLessonSchedules = allLessonSchedules.stream()
+            .filter(LessonSchedule::isCompleted)
+            .collect(Collectors.toList());
+
         List<LessonSchedule> uncompletedLessonSchedules = allLessonSchedules.stream()
             .filter(ls -> !ls.isCompleted())
-            .toList();
+            .collect(Collectors.toList());
 
-        // 2. completed=true이지만 updatedAt의 날짜와 dailySchedule.date가 다른 강의들
-        List<LessonSchedule> misplacedCompletedLessonSchedules = allLessonSchedules.stream()
-            .filter(LessonSchedule::isCompleted)
-            .filter(ls -> ls.getUpdatedAt() != null)
-            .filter(ls -> {
-                LocalDate updatedDate = ls.getUpdatedAt().toLocalDate();
-                LocalDate scheduledDate = ls.getDailySchedule().getDate();
-                return !updatedDate.equals(scheduledDate);
-            })
-            .toList();
+        log.info("완료된 LessonSchedule 개수: {}", completedLessonSchedules.size());
+        log.info("미완료된 LessonSchedule 개수: {}", uncompletedLessonSchedules.size());
 
-        log.info("완료되지 않은 LessonSchedule 개수: {}", uncompletedLessonSchedules.size());
-        log.info("날짜가 맞지 않는 완료된 LessonSchedule 개수: {}", misplacedCompletedLessonSchedules.size());
+        // 1. 완료된 강의들을 updatedAt 날짜 기준으로 재배치할 DailySchedule 생성
+        List<DailySchedule> newDailySchedules = createDailySchedulesForCompletedLessons(plan, completedLessonSchedules);
+        List<LessonSchedule> newLessonSchedules = createLessonSchedulesForCompleted(newDailySchedules, completedLessonSchedules);
 
-        // 재스케줄링할 전체 LessonSchedule 목록
-        List<LessonSchedule> lessonSchedulesToReschedule = new ArrayList<>();
-        lessonSchedulesToReschedule.addAll(uncompletedLessonSchedules);
-        lessonSchedulesToReschedule.addAll(misplacedCompletedLessonSchedules);
+        // 2. 미완료 강의들에 대한 Lesson 추출 및 정렬
+        List<Lesson> uncompletedLessons = uncompletedLessonSchedules.stream()
+            .map(LessonSchedule::getLesson)
+            .distinct()
+            .sorted(Comparator.comparing(Lesson::getOrder))
+            .collect(Collectors.toList());
 
-        if (lessonSchedulesToReschedule.isEmpty()) {
-            log.info("재스케줄링할 강의가 없습니다.");
-            return new ScheduleGenerationResult(Collections.emptyList(), Collections.emptyList());
-        }
-
-        // 재스케줄링할 LessonSchedule의 DailySchedule ID를 추출
-        Set<Long> dailyScheduleIds = lessonSchedulesToReschedule.stream()
+        // 3. 기존 모든 스케줄 삭제
+        Set<Long> allDailyScheduleIds = allLessonSchedules.stream()
             .map(ls -> ls.getDailySchedule().getId())
             .collect(Collectors.toSet());
 
-        // 재스케줄링할 LessonSchedule들을 삭제
-        lessonScheduleRepository.deleteAll(lessonSchedulesToReschedule);
+        lessonScheduleRepository.deleteAll(allLessonSchedules);
 
-        // ID 기반으로 남아있는 LessonSchedule이 없는 DailySchedule ID 찾기
-        List<Long> emptyDailyScheduleIds = dailyScheduleIds.stream()
+        // 비어있는 DailySchedule 찾아서 삭제
+        List<Long> emptyDailyScheduleIds = allDailyScheduleIds.stream()
             .filter(dsId -> lessonScheduleRepository.countByDailyScheduleId(dsId) == 0)
             .collect(Collectors.toList());
 
-        // 비어있는 DailySchedule 삭제 (벌크 삭제)
         if (!emptyDailyScheduleIds.isEmpty()) {
             log.info("비어있는 DailySchedule {} 개 삭제", emptyDailyScheduleIds.size());
             dailyScheduleRepository.deleteAllByIdInBatch(emptyDailyScheduleIds);
         }
 
-        // 영속성 컨텍스트 클리어 및 초기화
+        // 4. 미완료 강의들을 오늘부터 재스케줄링
+        ScheduleGenerationResult uncompletedResult;
+        if (!uncompletedLessons.isEmpty()) {
+            uncompletedResult = buildSchedulesForLessonsFromToday(plan, uncompletedLessons);
+            newDailySchedules.addAll(uncompletedResult.getDailySchedules());
+            newLessonSchedules.addAll(uncompletedResult.getLessonSchedules());
+        }
+
+        // 5. 영속성 컨텍스트 클리어 및 저장
         entityManager.flush();
         entityManager.clear();
 
-        // 재스케줄링 결과를 저장할 리스트들
-        List<DailySchedule> newDailySchedules = new ArrayList<>();
+        dailyScheduleRepository.saveAll(newDailySchedules);
+        lessonScheduleRepository.saveAll(newLessonSchedules);
+
+        log.info("Plan {}에 대한 재스케줄 생성 완료: 일일스케줄 {}개, 강의스케줄 {}개",
+            plan.getId(), newDailySchedules.size(), newLessonSchedules.size());
+    }
+
+    /**
+     * 완료된 강의들을 updatedAt 날짜 기준으로 DailySchedule을 생성합니다.
+     */
+    private List<DailySchedule> createDailySchedulesForCompletedLessons(Plan plan, List<LessonSchedule> completedLessonSchedules) {
+        if (completedLessonSchedules.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // updatedAt 날짜별로 그룹화
+        Map<LocalDate, List<LessonSchedule>> dateGroupedLessons = completedLessonSchedules.stream()
+            .collect(Collectors.groupingBy(ls -> {
+                LocalDateTime updatedAt = ls.getUpdatedAt();
+                return updatedAt != null ? updatedAt.toLocalDate() : LocalDate.now();
+            }));
+
+        List<DailySchedule> dailySchedules = new ArrayList<>();
+
+        for (Map.Entry<LocalDate, List<LessonSchedule>> entry : dateGroupedLessons.entrySet()) {
+            LocalDate date = entry.getKey();
+            List<LessonSchedule> lessonsForDate = entry.getValue();
+
+            int totalLessons = lessonsForDate.size();
+            int totalDuration = lessonsForDate.stream()
+                .mapToInt(LessonSchedule::getAdjustedDuration)
+                .sum();
+
+            DailySchedule dailySchedule = createNewDailySchedule(plan, date, totalLessons, totalDuration);
+            dailySchedules.add(dailySchedule);
+        }
+
+        return dailySchedules;
+    }
+
+    /**
+     * 완료된 강의들에 대한 새로운 LessonSchedule을 생성합니다.
+     */
+    private List<LessonSchedule> createLessonSchedulesForCompleted(List<DailySchedule> dailySchedules, List<LessonSchedule> completedLessonSchedules) {
+        if (completedLessonSchedules.isEmpty() || dailySchedules.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 날짜별 DailySchedule 맵 생성
+        Map<LocalDate, DailySchedule> dateToScheduleMap = dailySchedules.stream()
+            .collect(Collectors.toMap(DailySchedule::getDate, ds -> ds));
+
         List<LessonSchedule> newLessonSchedules = new ArrayList<>();
 
-        // 1. 날짜가 맞지 않는 완료된 강의들을 올바른 날짜로 재배치
-        Map<LocalDate, List<LessonSchedule>> completedLessonsByDate = misplacedCompletedLessonSchedules.stream()
-            .collect(Collectors.groupingBy(ls -> ls.getUpdatedAt().toLocalDate()));
+        // updatedAt 날짜별로 그룹화
+        Map<LocalDate, List<LessonSchedule>> dateGroupedLessons = completedLessonSchedules.stream()
+            .collect(Collectors.groupingBy(ls -> {
+                LocalDateTime updatedAt = ls.getUpdatedAt();
+                return updatedAt != null ? updatedAt.toLocalDate() : LocalDate.now();
+            }));
 
-        for (Map.Entry<LocalDate, List<LessonSchedule>> entry : completedLessonsByDate.entrySet()) {
-            LocalDate completedDate = entry.getKey();
-            List<LessonSchedule> completedLessons = entry.getValue();
+        for (Map.Entry<LocalDate, List<LessonSchedule>> entry : dateGroupedLessons.entrySet()) {
+            LocalDate date = entry.getKey();
+            List<LessonSchedule> lessonsForDate = entry.getValue();
+            DailySchedule dailySchedule = dateToScheduleMap.get(date);
 
-            // 해당 날짜에 DailySchedule이 이미 있는지 확인
-            List<DailySchedule> existingDailySchedules = dailyScheduleRepository.findByUserIdAndDate(userId, completedDate);
-            DailySchedule targetDailySchedule;
-
-            if (existingDailySchedules.isEmpty()) {
-                // 새로운 DailySchedule 생성
-                int totalLessons = completedLessons.size();
-                int totalDuration = completedLessons.stream()
-                    .mapToInt(ls -> (int)(ls.getLesson().getDuration() / plan.getPlaybackSpeed()))
-                    .sum();
-
-                targetDailySchedule = createNewDailySchedule(plan, completedDate, totalLessons, totalDuration);
-                newDailySchedules.add(targetDailySchedule);
-            } else {
-                // 기존 DailySchedule 사용 (첫 번째 것 사용)
-                targetDailySchedule = existingDailySchedules.get(0);
+            if (dailySchedule == null) {
+                log.warn("DailySchedule not found for date: {}", date);
+                continue;
             }
 
-            // 완료된 LessonSchedule들을 해당 날짜로 재생성
-            for (int i = 0; i < completedLessons.size(); i++) {
-                LessonSchedule originalLs = completedLessons.get(i);
-                int adjustedDuration = (int)(originalLs.getLesson().getDuration() / plan.getPlaybackSpeed());
+            // Lesson order 기준으로 정렬하여 displayOrder 설정
+            lessonsForDate.sort(Comparator.comparing(ls -> ls.getLesson().getOrder()));
+
+            for (int i = 0; i < lessonsForDate.size(); i++) {
+                LessonSchedule originalLs = lessonsForDate.get(i);
 
                 LessonSchedule newLessonSchedule = LessonSchedule.builder()
-                    .dailySchedule(targetDailySchedule)
+                    .dailySchedule(dailySchedule)
                     .lesson(originalLs.getLesson())
-                    .adjustedDuration(adjustedDuration)
+                    .adjustedDuration(originalLs.getAdjustedDuration())
                     .displayOrder(i + 1)
-                    .completed(true)
-                    .updatedAt(originalLs.getUpdatedAt())
+                    .completed(true) // 완료된 상태 유지
+                    .updatedAt(originalLs.getUpdatedAt()) // 기존 updatedAt 유지
                     .build();
 
                 newLessonSchedules.add(newLessonSchedule);
             }
         }
 
-        // 2. 미완료 강의들을 오늘부터 새로 배치
-        if (!uncompletedLessonSchedules.isEmpty()) {
-            List<Lesson> uncompletedLessons = uncompletedLessonSchedules.stream()
-                .map(LessonSchedule::getLesson)
-                .distinct()
-                .sorted(Comparator.comparing(Lesson::getOrder))
-                .toList();
-
-            ScheduleGenerationResult uncompletedResult = buildSchedulesForLessonsFromToday(plan, uncompletedLessons);
-            newDailySchedules.addAll(uncompletedResult.getDailySchedules());
-            newLessonSchedules.addAll(uncompletedResult.getLessonSchedules());
-        }
-
-        // 생성된 스케줄들을 저장
-        dailyScheduleRepository.saveAll(newDailySchedules);
-        lessonScheduleRepository.saveAll(newLessonSchedules);
-
-        log.info("Plan {}에 대한 재스케줄 생성 완료: 일일스케줄 {}개, 강의스케줄 {}개",
-            plan.getId(), newDailySchedules.size(), newLessonSchedules.size());
-
-        return new ScheduleGenerationResult(newDailySchedules, newLessonSchedules);
+        return newLessonSchedules;
     }
 
     /**
