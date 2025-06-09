@@ -5,7 +5,10 @@ import com.landr.domain.schedule.LessonSchedule;
 import com.landr.exception.ApiException;
 import com.landr.exception.ExceptionType;
 import com.landr.repository.lessonschedule.LessonScheduleRepository;
+import com.landr.service.dto.DailyScheduleWithLessonsDto;
+import com.landr.service.dto.LessonScheduleDto;
 import com.landr.service.dto.WeeklyAchievementDto;
+import com.landr.service.schedule.ScheduleService;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -21,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class LessonScheduleService {
 
     private final LessonScheduleRepository lessonScheduleRepository;
+    private final ScheduleService scheduleService;
 
     @Transactional
     public Boolean toggleCheck(Long lessonScheduleId, Long userId) {
@@ -38,23 +42,31 @@ public class LessonScheduleService {
      */
     @Transactional(readOnly = true)
     public WeeklyAchievementDto getWeeklyAchievement(Long userId) {
-        LocalDate today = LocalDate.now();
-        LocalDate startOfWeek = today.with(java.time.DayOfWeek.MONDAY);
+        LocalDate startOfWeek = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
+        WeeklyAchievementDto.WeeklyAchievementDtoBuilder builder = WeeklyAchievementDto.builder();
 
-        // 이번주 월요일부터 오늘까지의 수업 일정을 조회합니다.
-        List<LessonSchedule> weeklyLessonSchedules = lessonScheduleRepository.findLessonSchedulesByUserIdAndDateRange(
-            userId, startOfWeek, today);
+        for (int i = 0; i < 7; i++) {
+            LocalDate checkDate = startOfWeek.plusDays(i);
+            DailyScheduleWithLessonsDto daySchedule = scheduleService.getUserDailySchedules(userId, checkDate);
 
-        // 날짜별로 그룹화
-        Map<LocalDate, List<LessonSchedule>> dailyScheduleMap = weeklyLessonSchedules.stream()
-            .collect(Collectors.groupingBy(ls -> ls.getDailySchedule().getDate()));
+            boolean isAchieved = false;
+            if (daySchedule != null && !daySchedule.getLessonSchedules().isEmpty()) {
+                isAchieved = daySchedule.getLessonSchedules().stream()
+                    .allMatch(LessonScheduleDto::isCompleted);
+            }
 
-        // 각 요일별 학습 완료 상태 계산
-        Map<DayOfWeek, Boolean> achievementMap = calculateDailyAchievements(startOfWeek, today,
-            dailyScheduleMap);
+            switch (i) {
+                case 0 -> builder.mondayAchieved(isAchieved);
+                case 1 -> builder.tuesdayAchieved(isAchieved);
+                case 2 -> builder.wednesdayAchieved(isAchieved);
+                case 3 -> builder.thursdayAchieved(isAchieved);
+                case 4 -> builder.fridayAchieved(isAchieved);
+                case 5 -> builder.saturdayAchieved(isAchieved);
+                case 6 -> builder.sundayAchieved(isAchieved);
+            }
+        }
 
-        // DTO 생성 및 반환
-        return buildWeeklyAchievementDto(achievementMap);
+        return builder.build();
     }
 
     /**
