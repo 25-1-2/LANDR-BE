@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,21 +80,26 @@ public class ScheduleGeneratorService {
      */
     @Transactional
     public void rescheduleIncompleteLessons(Long userId, Long planId) {
-        // 해당 계획이 사용자의 것인지 확인
         Plan plan = planRepository.findByIdAndUserId(planId, userId)
             .orElseThrow(() -> new ApiException(ExceptionType.PLAN_NOT_FOUND));
 
-        // 계획이 PERIOD 타입이고 종료일이 이미 지난 경우 확인
+        // ✅ 영속성 컨텍스트 클리어 전에 필요한 데이터 미리 로딩
+        Set<DayOfWeek> studyDays = new HashSet<>(plan.getStudyDays()); // 강제 로딩
+        PlanType planType = plan.getPlanType();
+        LocalDate startDate = plan.getStartDate();
+        LocalDate endDate = plan.getEndDate();
+        Integer dailyTime = plan.getDailyTime();
+        Float playbackSpeed = plan.getPlaybackSpeed();
+
         LocalDate today = LocalDate.now();
-        if (plan.getPlanType() == PlanType.PERIOD &&
-            (plan.getEndDate() == null || plan.getEndDate().isBefore(today))) {
+        if (planType == PlanType.PERIOD &&
+            (endDate == null || endDate.isBefore(today))) {
             throw new ApiException(ExceptionType.PLAN_END_DATE_PASSED,
                 "계획의 종료일이 이미 지났습니다. 종료일을 업데이트한 후 다시 시도해주세요.");
         }
 
         log.info("Plan {}에 대한 전체 스케줄 재생성 시작", planId);
 
-        // 해당 계획의 모든 LessonSchedule 조회
         List<LessonSchedule> allLessonSchedules = lessonScheduleRepository.findByPlanIdAndUserId(userId, planId);
 
         if (allLessonSchedules.isEmpty()) {
@@ -120,7 +126,6 @@ public class ScheduleGeneratorService {
 
         lessonScheduleRepository.deleteAll(allLessonSchedules);
 
-        // 비어있는 DailySchedule 찾아서 삭제
         List<Long> emptyDailyScheduleIds = allDailyScheduleIds.stream()
             .filter(dsId -> lessonScheduleRepository.countByDailyScheduleId(dsId) == 0)
             .collect(Collectors.toList());
@@ -133,6 +138,17 @@ public class ScheduleGeneratorService {
         // 영속성 컨텍스트 클리어
         entityManager.flush();
         entityManager.clear();
+
+        // ✅ Plan 객체를 미리 로딩한 데이터로 재구성
+        Plan planForScheduling = Plan.builder()
+            .id(planId)
+            .planType(planType)
+            .startDate(startDate)
+            .endDate(endDate)
+            .dailyTime(dailyTime)
+            .playbackSpeed(playbackSpeed)
+            .studyDays(studyDays)
+            .build();
 
         // === 새로운 로직 ===
 
@@ -163,7 +179,7 @@ public class ScheduleGeneratorService {
                 .mapToInt(LessonSchedule::getAdjustedDuration)
                 .sum();
 
-            DailySchedule dailySchedule = createNewDailySchedule(plan, date, totalLessons, totalDuration);
+            DailySchedule dailySchedule = createNewDailySchedule(planForScheduling, date, totalLessons, totalDuration);
             existingDailySchedules.put(date, dailySchedule);
 
             // 완료된 LessonSchedule 생성
@@ -185,22 +201,20 @@ public class ScheduleGeneratorService {
         // 4. 미완료 강의들을 오늘부터 재스케줄링
         List<DailySchedule> newDailySchedules = new ArrayList<>();
         if (!uncompletedLessons.isEmpty()) {
-            ScheduleGenerationResult uncompletedResult = buildSchedulesForLessonsFromToday(plan, uncompletedLessons);
+            ScheduleGenerationResult uncompletedResult = buildSchedulesForLessonsFromToday(planForScheduling, uncompletedLessons);
 
+            // 나머지 로직은 동일...
             for (DailySchedule uncompletedDs : uncompletedResult.getDailySchedules()) {
                 LocalDate date = uncompletedDs.getDate();
 
                 if (existingDailySchedules.containsKey(date)) {
-                    // 기존 DailySchedule에 추가
                     DailySchedule existingDs = existingDailySchedules.get(date);
                     existingDs.addLessons(uncompletedDs.getTotalLessons(), uncompletedDs.getTotalDuration());
 
-                    // 해당 날짜의 미완료 LessonSchedule들을 기존 DailySchedule에 연결하고 displayOrder 조정
                     List<LessonSchedule> uncompletedLsForDate = uncompletedResult.getLessonSchedules().stream()
                         .filter(ls -> ls.getDailySchedule().getDate().equals(date))
                         .collect(Collectors.toList());
 
-                    // displayOrder 재조정 (기존 완료된 강의들 다음부터)
                     int nextDisplayOrder = existingDs.getTotalLessons() - uncompletedDs.getTotalLessons() + 1;
                     for (LessonSchedule ls : uncompletedLsForDate) {
                         LessonSchedule newLs = LessonSchedule.builder()
@@ -213,7 +227,6 @@ public class ScheduleGeneratorService {
                         allNewLessonSchedules.add(newLs);
                     }
                 } else {
-                    // 새로운 날짜는 그대로 추가
                     newDailySchedules.add(uncompletedDs);
                     allNewLessonSchedules.addAll(
                         uncompletedResult.getLessonSchedules().stream()
@@ -234,7 +247,7 @@ public class ScheduleGeneratorService {
         lessonScheduleRepository.saveAll(allNewLessonSchedules);
 
         log.info("Plan {}에 대한 재스케줄 생성 완료: 일일스케줄 {}개, 강의스케줄 {}개",
-            plan.getId(), allDailySchedules.size(), allNewLessonSchedules.size());
+            planId, allDailySchedules.size(), allNewLessonSchedules.size());
     }
     /**
      * 완료된 강의들을 updatedAt 날짜 기준으로 DailySchedule을 생성합니다.
