@@ -54,6 +54,11 @@ public class DailySchedule {
     @Column(name = "total_duration", nullable = false)
     private int totalDuration;
 
+    public void addLessons(int additionalLessons, int additionalDuration) {
+        this.totalLessons += additionalLessons;
+        this.totalDuration += additionalDuration;
+    }
+
     @Override
     public String toString() {
         return "DailySchedule{" +

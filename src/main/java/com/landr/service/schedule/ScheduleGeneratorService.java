@@ -113,18 +113,7 @@ public class ScheduleGeneratorService {
         log.info("완료된 LessonSchedule 개수: {}", completedLessonSchedules.size());
         log.info("미완료된 LessonSchedule 개수: {}", uncompletedLessonSchedules.size());
 
-        // 1. 완료된 강의들을 updatedAt 날짜 기준으로 재배치할 DailySchedule 생성
-        List<DailySchedule> newDailySchedules = createDailySchedulesForCompletedLessons(plan, completedLessonSchedules);
-        List<LessonSchedule> newLessonSchedules = createLessonSchedulesForCompleted(newDailySchedules, completedLessonSchedules);
-
-        // 2. 미완료 강의들에 대한 Lesson 추출 및 정렬
-        List<Lesson> uncompletedLessons = uncompletedLessonSchedules.stream()
-            .map(LessonSchedule::getLesson)
-            .distinct()
-            .sorted(Comparator.comparing(Lesson::getOrder))
-            .collect(Collectors.toList());
-
-        // 3. 기존 모든 스케줄 삭제
+        // 기존 모든 스케줄 삭제
         Set<Long> allDailyScheduleIds = allLessonSchedules.stream()
             .map(ls -> ls.getDailySchedule().getId())
             .collect(Collectors.toSet());
@@ -141,25 +130,112 @@ public class ScheduleGeneratorService {
             dailyScheduleRepository.deleteAllByIdInBatch(emptyDailyScheduleIds);
         }
 
-        // 4. 미완료 강의들을 오늘부터 재스케줄링
-        ScheduleGenerationResult uncompletedResult;
-        if (!uncompletedLessons.isEmpty()) {
-            uncompletedResult = buildSchedulesForLessonsFromToday(plan, uncompletedLessons);
-            newDailySchedules.addAll(uncompletedResult.getDailySchedules());
-            newLessonSchedules.addAll(uncompletedResult.getLessonSchedules());
-        }
-
-        // 5. 영속성 컨텍스트 클리어 및 저장
+        // 영속성 컨텍스트 클리어
         entityManager.flush();
         entityManager.clear();
 
-        dailyScheduleRepository.saveAll(newDailySchedules);
-        lessonScheduleRepository.saveAll(newLessonSchedules);
+        // === 새로운 로직 ===
+
+        // 1. 완료된 강의들을 updatedAt 날짜별로 그룹화
+        Map<LocalDate, List<LessonSchedule>> completedByDate = completedLessonSchedules.stream()
+            .collect(Collectors.groupingBy(ls -> {
+                LocalDateTime updatedAt = ls.getUpdatedAt();
+                return updatedAt != null ? updatedAt.toLocalDate() : LocalDate.now();
+            }));
+
+        // 2. 미완료 강의들에 대한 Lesson 추출 및 정렬
+        List<Lesson> uncompletedLessons = uncompletedLessonSchedules.stream()
+            .map(LessonSchedule::getLesson)
+            .distinct()
+            .sorted(Comparator.comparing(Lesson::getOrder))
+            .collect(Collectors.toList());
+
+        // 3. 완료된 강의들의 DailySchedule 먼저 생성
+        Map<LocalDate, DailySchedule> existingDailySchedules = new HashMap<>();
+        List<LessonSchedule> allNewLessonSchedules = new ArrayList<>();
+
+        for (Map.Entry<LocalDate, List<LessonSchedule>> entry : completedByDate.entrySet()) {
+            LocalDate date = entry.getKey();
+            List<LessonSchedule> lessonsForDate = entry.getValue();
+
+            int totalLessons = lessonsForDate.size();
+            int totalDuration = lessonsForDate.stream()
+                .mapToInt(LessonSchedule::getAdjustedDuration)
+                .sum();
+
+            DailySchedule dailySchedule = createNewDailySchedule(plan, date, totalLessons, totalDuration);
+            existingDailySchedules.put(date, dailySchedule);
+
+            // 완료된 LessonSchedule 생성
+            lessonsForDate.sort(Comparator.comparing(ls -> ls.getLesson().getOrder()));
+            for (int i = 0; i < lessonsForDate.size(); i++) {
+                LessonSchedule originalLs = lessonsForDate.get(i);
+                LessonSchedule newLessonSchedule = LessonSchedule.builder()
+                    .dailySchedule(dailySchedule)
+                    .lesson(originalLs.getLesson())
+                    .adjustedDuration(originalLs.getAdjustedDuration())
+                    .displayOrder(i + 1)
+                    .completed(true)
+                    .updatedAt(originalLs.getUpdatedAt())
+                    .build();
+                allNewLessonSchedules.add(newLessonSchedule);
+            }
+        }
+
+        // 4. 미완료 강의들을 오늘부터 재스케줄링
+        List<DailySchedule> newDailySchedules = new ArrayList<>();
+        if (!uncompletedLessons.isEmpty()) {
+            ScheduleGenerationResult uncompletedResult = buildSchedulesForLessonsFromToday(plan, uncompletedLessons);
+
+            for (DailySchedule uncompletedDs : uncompletedResult.getDailySchedules()) {
+                LocalDate date = uncompletedDs.getDate();
+
+                if (existingDailySchedules.containsKey(date)) {
+                    // 기존 DailySchedule에 추가
+                    DailySchedule existingDs = existingDailySchedules.get(date);
+                    existingDs.addLessons(uncompletedDs.getTotalLessons(), uncompletedDs.getTotalDuration());
+
+                    // 해당 날짜의 미완료 LessonSchedule들을 기존 DailySchedule에 연결하고 displayOrder 조정
+                    List<LessonSchedule> uncompletedLsForDate = uncompletedResult.getLessonSchedules().stream()
+                        .filter(ls -> ls.getDailySchedule().getDate().equals(date))
+                        .collect(Collectors.toList());
+
+                    // displayOrder 재조정 (기존 완료된 강의들 다음부터)
+                    int nextDisplayOrder = existingDs.getTotalLessons() - uncompletedDs.getTotalLessons() + 1;
+                    for (LessonSchedule ls : uncompletedLsForDate) {
+                        LessonSchedule newLs = LessonSchedule.builder()
+                            .dailySchedule(existingDs)
+                            .lesson(ls.getLesson())
+                            .adjustedDuration(ls.getAdjustedDuration())
+                            .displayOrder(nextDisplayOrder++)
+                            .completed(false)
+                            .build();
+                        allNewLessonSchedules.add(newLs);
+                    }
+                } else {
+                    // 새로운 날짜는 그대로 추가
+                    newDailySchedules.add(uncompletedDs);
+                    allNewLessonSchedules.addAll(
+                        uncompletedResult.getLessonSchedules().stream()
+                            .filter(ls -> ls.getDailySchedule().getDate().equals(date))
+                            .collect(Collectors.toList())
+                    );
+                }
+            }
+        }
+
+        // 5. 모든 DailySchedule 수집
+        List<DailySchedule> allDailySchedules = new ArrayList<>();
+        allDailySchedules.addAll(existingDailySchedules.values());
+        allDailySchedules.addAll(newDailySchedules);
+
+        // 6. 저장
+        dailyScheduleRepository.saveAll(allDailySchedules);
+        lessonScheduleRepository.saveAll(allNewLessonSchedules);
 
         log.info("Plan {}에 대한 재스케줄 생성 완료: 일일스케줄 {}개, 강의스케줄 {}개",
-            plan.getId(), newDailySchedules.size(), newLessonSchedules.size());
+            plan.getId(), allDailySchedules.size(), allNewLessonSchedules.size());
     }
-
     /**
      * 완료된 강의들을 updatedAt 날짜 기준으로 DailySchedule을 생성합니다.
      */
