@@ -7,11 +7,14 @@ import com.landr.domain.user.User;
 import com.landr.repository.lessonschedule.LessonScheduleRepository;
 import com.landr.repository.plan.PlanRepository;
 import com.landr.service.dto.CompletedPlanDto;
+import com.landr.service.dto.DailyScheduleWithLessonsDto;
+import com.landr.service.dto.LessonScheduleDto;
 import com.landr.service.mypage.dto.MyPage;
 import com.landr.service.mypage.dto.MyPageStatistics;
 import com.landr.service.mypage.dto.SubjectAchievementDto;
 import com.landr.service.mypage.dto.SubjectTimeDto;
 import com.landr.service.mypage.dto.WeeklyTimeDto;
+import com.landr.service.schedule.ScheduleService;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,6 +35,7 @@ public class MyPageServiceImpl implements MyPageService {
 
     private final PlanRepository planRepository;
     private final LessonScheduleRepository lessonScheduleRepository;
+    private final ScheduleService scheduleService;
 
     @Override
     @Transactional(readOnly = true)
@@ -42,13 +46,18 @@ public class MyPageServiceImpl implements MyPageService {
 
         // 오늘의 레슨 스케줄 정보 조회
         LocalDate today = LocalDate.now();
-        List<LessonSchedule> todayLessonSchedules = lessonScheduleRepository.findTodayLessonSchedules(
+        DailyScheduleWithLessonsDto todayScheduleDto = scheduleService.getUserDailySchedules(
             user.getId(), today);
 
-        int todayTotalLessonCount = todayLessonSchedules.size();
-        int todayCompletedLessonCount = (int) todayLessonSchedules.stream()
-            .filter(LessonSchedule::isCompleted)
-            .count();
+        int todayTotalLessonCount = 0;
+        int todayCompletedLessonCount = 0;
+
+        if (todayScheduleDto != null) {
+            todayTotalLessonCount = todayScheduleDto.getTotalLessons();
+            todayCompletedLessonCount = (int) todayScheduleDto.getLessonSchedules().stream()
+                .filter(LessonScheduleDto::isCompleted)
+                .count();
+        }
 
         // 사용자가 완료한 계획 리스트
         List<CompletedPlanDto> completedPlans = userplanList.stream()
