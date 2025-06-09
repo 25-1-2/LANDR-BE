@@ -129,7 +129,6 @@ public class PlanService {
                     .studyGroupId(studyGroupId)
                     .build();
             })
-            .filter(dto -> dto.getCompletedLessons() < dto.getTotalLessons())
             .toList();
     }
 
