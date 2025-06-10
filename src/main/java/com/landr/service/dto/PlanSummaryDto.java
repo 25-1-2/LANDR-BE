@@ -1,6 +1,7 @@
 package com.landr.service.dto;
 
 import com.landr.domain.lecture.Platform;
+import com.landr.domain.lecture.Subject;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,4 +21,6 @@ public class PlanSummaryDto {
     private long completedLessons;
     private boolean isStudyGroup;
     private Long studyGroupId;
+    private Subject subject;
+    private String tag;
 }

@@ -127,6 +127,8 @@ public class PlanService {
                     .completedLessons(completedLessons)
                     .isStudyGroup(isStudyGroup)
                     .studyGroupId(studyGroupId)
+                    .subject(plan.getLecture().getSubject())
+                    .tag(plan.getLecture().getTag())
                     .build();
             })
             .toList();
