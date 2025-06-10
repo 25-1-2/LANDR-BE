@@ -38,6 +38,48 @@
 <p align="center"><img width="940" alt="Image" src="https://github.com/user-attachments/assets/c7e00d7b-0b54-4d36-b0a4-0a8a54683de4" /></p>
 
 ## 백엔드
+
+### 기술 스택
+<p align="center">
+  <strong>Backend</strong><br>
+  <img src="https://img.shields.io/badge/Java_17-007396?style=for-the-badge&logo=java&logoColor=white">
+  <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white">
+  <img src="https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white">
+  <img src="https://img.shields.io/badge/Spring_Data_JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
+  <img src="https://img.shields.io/badge/QueryDSL-4479A1?style=for-the-badge&logo=querydsl&logoColor=white">
+</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white">
+  <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white">
+  <img src="https://img.shields.io/badge/Firebase_Admin-DD2C00?style=for-the-badge&logo=firebase&logoColor=white">
+  <img src="https://img.shields.io/badge/OpenAI_API-412991?style=for-the-badge&logo=openai&logoColor=white">
+  <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black">
+</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/Gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white">
+  <img src="https://img.shields.io/badge/Lombok-BC4521?style=for-the-badge&logo=lombok&logoColor=white">
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
+</p>
+
+### 개발 규칙
+<details>
+<summary><b>📋 브랜치 규칙</b></summary>
+
+- Issue 생성 후 해당 번호로 브랜치 생성
+- 브랜치명: `feat/{issue번호}` (예: `feat/57`)
+
+</details>
+
+<details>
+<summary><b>📝 커밋 규칙</b></summary>
+
+- `feat`: 새로운 기능 추가
+- `fix`: 버그 수정
+- `chore`: 빌드 업무, 패키지 매니저 설정 등
+- `cicd`: CI/CD 관련 설정
+
+</details>
+
 <table>
   <tbody>
     <tr>
@@ -46,3 +88,5 @@
     </tr>
   </tbody>
 </table>
+
+
