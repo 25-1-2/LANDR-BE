@@ -49,8 +49,8 @@ public class NotificationScheduleService {
                     .count();
 
                 if (incompleteCount > 0) {
-                    String title = "오늘 강의 확인";
-                    String body = String.format("오늘 아직 안 들은 강의 %d개가 있어요", incompleteCount);
+                    String title = "🎯 오늘 강의 확인";
+                    String body = String.format("오늘 아직 안 들은 강의 %d개가 있어요! 목표 달성까지 조금만 더 힘내세요 💪", incompleteCount);
 
                     boolean success = fcmService.sendNotificationToUser(userId, title, body);
                     if (success) {
@@ -87,7 +87,7 @@ public class NotificationScheduleService {
 
                     // 특정 날짜에만 알림 전송 (28일, 14일, 7일, 3일, 1일 전)
                     if (shouldSendDDayNotification(daysUntilGoal)) {
-                        String title = "D-Day 알림";
+                        String title = "📅 D-Day 알림";
                         String body;
 
                         if (daysUntilGoal == 0) {
