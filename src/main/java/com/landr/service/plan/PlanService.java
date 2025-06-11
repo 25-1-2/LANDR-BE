@@ -152,6 +152,7 @@ public class PlanService {
                 .lectureTitle(plan.getLecture().getTitle())
                 .teacher(plan.getLecture().getTeacher())
                 .platform(plan.getLecture().getPlatform())
+                .planType(plan.getPlanType())
                 .dailySchedules(List.of())
                 .build();
         }
@@ -192,6 +193,7 @@ public class PlanService {
             .lectureTitle(plan.getLecture().getTitle())
             .teacher(plan.getLecture().getTeacher())
             .platform(plan.getLecture().getPlatform())
+            .planType(plan.getPlanType())
             .dailySchedules(dailyScheduleDtos)
             .build();
     }

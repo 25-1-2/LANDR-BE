@@ -1,6 +1,7 @@
 package com.landr.service.dto;
 
 import com.landr.domain.lecture.Platform;
+import com.landr.domain.plan.PlanType;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,7 @@ public class PlanDetailResponse {
     private String lectureTitle;
     private String teacher;
     private Platform platform;
+    private PlanType planType;
     private List<DailyScheduleDto> dailySchedules;
 }
 
