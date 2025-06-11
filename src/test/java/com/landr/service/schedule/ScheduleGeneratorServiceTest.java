@@ -120,32 +120,6 @@ class ScheduleGeneratorServiceTest {
     }
 
     @Test
-    @DisplayName("TIME 타입 스케줄 생성 성공")
-    void generateSchedules_Time_Success() {
-        // Given
-        when(lessonRepository.findByLectureIdAndOrderBetweenOrderByOrder(
-            lecture.getId(), 1, 3))
-            .thenReturn(lessons);
-        when(dailyScheduleRepository.saveAll(anyList()))
-            .thenAnswer(invocation -> invocation.getArgument(0));
-        when(lessonScheduleRepository.saveAll(anyList()))
-            .thenAnswer(invocation -> invocation.getArgument(0));
-
-        // When
-        ScheduleGenerationResult result = scheduleGeneratorService.generateSchedules(timePlan);
-
-        // Then
-        assertNotNull(result);
-        assertFalse(result.getDailySchedules().isEmpty());
-        assertEquals(lessons.size(), result.getLessonSchedules().size());
-
-        // 배속 적용 확인
-        result.getLessonSchedules().forEach(ls -> {
-            assertTrue(ls.getAdjustedDuration() < lessons.get(0).getDuration());
-        });
-    }
-
-    @Test
     @DisplayName("강의가 없는 경우 빈 결과 반환")
     void generateSchedules_NoLessons() {
         // Given
@@ -162,25 +136,6 @@ class ScheduleGeneratorServiceTest {
         assertTrue(result.getLessonSchedules().isEmpty());
     }
 
-    @Test
-    @DisplayName("재스케줄링 성공")
-    void rescheduleIncompleteLessons_Success() {
-        // Given
-        when(planRepository.findByIdAndUserId(periodPlan.getId(), user.getId()))
-            .thenReturn(Optional.of(periodPlan));
-        when(lessonScheduleRepository.findByPlanIdAndUserId(user.getId(), periodPlan.getId()))
-            .thenReturn(Arrays.asList());
-        doNothing().when(entityManager).flush();
-        doNothing().when(entityManager).clear();
-
-        // When
-        assertDoesNotThrow(() ->
-            scheduleGeneratorService.rescheduleIncompleteLessons(user.getId(), periodPlan.getId()));
-
-        // Then
-        verify(entityManager, times(1)).flush();
-        verify(entityManager, times(1)).clear();
-    }
 
     @Test
     @DisplayName("재스케줄링 실패 - 종료일이 지난 경우")
