@@ -4,6 +4,8 @@ package com.landr.domain.plan;
 import com.landr.domain.lecture.Lecture;
 import com.landr.domain.lecture.Lesson;
 import com.landr.domain.user.User;
+import com.landr.exception.ApiException;
+import com.landr.exception.ExceptionType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
@@ -103,5 +105,44 @@ public class Plan {
 
     public void delete() {
         isDeleted = true;
+    }
+
+    public void updateForPeriodType(LocalDate endDate, Float playbackSpeed) {
+        if (endDate != null) {
+            validateEndDate(endDate);
+            this.endDate = endDate;
+        }
+        if (playbackSpeed != null) {
+            this.playbackSpeed = playbackSpeed;
+        }
+    }
+
+    public void updateForTimeType(Integer dailyTime, Float playbackSpeed) {
+        if (dailyTime != null) {
+            validateDailyTime(dailyTime);
+            this.dailyTime = dailyTime;
+        }
+        if (playbackSpeed != null) {
+            this.playbackSpeed = playbackSpeed;
+        }
+    }
+
+    private void validateEndDate(LocalDate endDate) {
+        LocalDate today = LocalDate.now();
+        if (endDate.isBefore(today)) {
+            throw new ApiException(ExceptionType.BAD_REQUEST,
+                "종료 날짜는 오늘 이후여야 합니다.");
+        }
+        if (this.startDate != null && endDate.isBefore(this.startDate)) {
+            throw new ApiException(ExceptionType.BAD_REQUEST,
+                "종료 날짜는 시작 날짜보다 이후여야 합니다.");
+        }
+    }
+
+    private void validateDailyTime(Integer dailyTime) {
+        if (dailyTime <= 0) {
+            throw new ApiException(ExceptionType.BAD_REQUEST,
+                "하루 공부 시간은 0보다 커야 합니다.");
+        }
     }
 }

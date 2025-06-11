@@ -4,6 +4,7 @@ import com.landr.controller.CommonResponse;
 import com.landr.controller.plan.dto.CreatePlanRequest;
 import com.landr.controller.plan.dto.EditLectureNameRequest;
 import com.landr.controller.plan.dto.EditLectureNameResponse;
+import com.landr.controller.plan.dto.UpdatePlanRequest;
 import com.landr.domain.user.User;
 import com.landr.service.dto.PlanDetailResponse;
 import com.landr.service.dto.PlanSummaryDto;
@@ -108,6 +109,21 @@ public class PlanController {
         return ResponseEntity.ok(
             CommonResponse.builder()
                 .message("계획(" + planId + ")이 정상적으로 재스케줄링되었습니다.")
+                .build()
+        );
+    }
+
+    @Operation(summary = "계획 수정")
+    @PatchMapping("/{planId}")
+    public ResponseEntity<CommonResponse> updatePlan(
+        @PathVariable Long planId,
+        @RequestBody @Valid UpdatePlanRequest request,
+        @AuthenticationPrincipal User user
+    ) {
+        planService.updatePlan(planId, request, user.getId());
+        return ResponseEntity.ok(
+            CommonResponse.builder()
+                .message("계획이 정상적으로 수정되었습니다.")
                 .build()
         );
     }

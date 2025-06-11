@@ -2,9 +2,11 @@ package com.landr.service.plan;
 
 import com.landr.controller.plan.dto.CreatePlanRequest;
 import com.landr.controller.plan.dto.EditLectureNameRequest;
+import com.landr.controller.plan.dto.UpdatePlanRequest;
 import com.landr.domain.lecture.Lecture;
 import com.landr.domain.lecture.Lesson;
 import com.landr.domain.plan.Plan;
+import com.landr.domain.plan.PlanType;
 import com.landr.domain.schedule.DailySchedule;
 import com.landr.domain.schedule.LessonSchedule;
 import com.landr.domain.user.User;
@@ -200,5 +202,34 @@ public class PlanService {
             .orElseThrow(() -> new ApiException(ExceptionType.PLAN_NOT_FOUND));
 
         planRepository.delete(plan);
+    }
+
+    @Transactional
+    public void updatePlan(Long planId, UpdatePlanRequest request, Long userId) {
+        Plan plan = planRepository.findByIdAndUserId(planId, userId)
+            .orElseThrow(() -> new ApiException(ExceptionType.PLAN_NOT_FOUND));
+
+        if (!request.hasAnyUpdateField()) {
+            throw new ApiException(ExceptionType.BAD_REQUEST, "수정할 필드가 없습니다.");
+        }
+
+        // 타입별 업데이트 및 검증
+        if (plan.getPlanType() == PlanType.PERIOD) {
+            if (request.getDailyTime() != null) {
+                throw new ApiException(ExceptionType.BAD_REQUEST,
+                    "PERIOD 타입 계획은 dailyTime을 수정할 수 없습니다.");
+            }
+            plan.updateForPeriodType(request.getEndDate(), request.getPlaybackSpeed());
+        } else {
+            if (request.getEndDate() != null) {
+                throw new ApiException(ExceptionType.BAD_REQUEST,
+                    "TIME 타입 계획은 endDate를 수정할 수 없습니다.");
+            }
+            plan.updateForTimeType(request.getDailyTime(), request.getPlaybackSpeed());
+        }
+
+        scheduleGeneratorService.rescheduleIncompleteLessons(userId, planId);
+
+        log.info("Plan {} 수정 및 재스케줄링 완료", planId);
     }
 }

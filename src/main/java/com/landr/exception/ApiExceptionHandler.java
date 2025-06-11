@@ -64,7 +64,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ExceptionResponse> handleException(Exception ex) {
         return ResponseEntity
-            .status(ExceptionType.SERVER_ERROR.getHttpStatusCode())
+            .status(ExceptionType.BAD_REQUEST.getHttpStatusCode())
             .body(new ExceptionResponse(500, ex.getMessage()));
     }
 }
