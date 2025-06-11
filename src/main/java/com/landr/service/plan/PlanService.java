@@ -153,6 +153,10 @@ public class PlanService {
                 .teacher(plan.getLecture().getTeacher())
                 .platform(plan.getLecture().getPlatform())
                 .planType(plan.getPlanType())
+                .startDate(plan.getStartDate())
+                .endDate(plan.getEndDate())
+                .dailyTime(plan.getDailyTime())
+                .playbackSpeed(plan.getPlaybackSpeed())
                 .dailySchedules(List.of())
                 .build();
         }
@@ -194,6 +198,10 @@ public class PlanService {
             .teacher(plan.getLecture().getTeacher())
             .platform(plan.getLecture().getPlatform())
             .planType(plan.getPlanType())
+            .startDate(plan.getStartDate())
+            .endDate(plan.getEndDate())
+            .dailyTime(plan.getDailyTime())
+            .playbackSpeed(plan.getPlaybackSpeed())
             .dailySchedules(dailyScheduleDtos)
             .build();
     }
