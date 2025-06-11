@@ -1,4 +1,4 @@
-
+// src/test/java/com/landr/service/schedule/ScheduleServiceTest.java (기존 파일 보완)
 package com.landr.service.schedule;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,57 +43,95 @@ class ScheduleServiceTest {
     private ScheduleService scheduleService;
 
     private User user;
-    private Plan plan;
-    private Lecture lecture;
-    private Lesson lesson1, lesson2;
-    private DailySchedule dailySchedule;
-    private LessonSchedule lessonSchedule1, lessonSchedule2;
+    private Plan plan1, plan2;
+    private Lecture lecture1, lecture2;
+    private Lesson lesson1, lesson2, lesson3, lesson4;
+    private DailySchedule dailySchedule1, dailySchedule2;
+    private LessonSchedule lessonSchedule1, lessonSchedule2, lessonSchedule3, lessonSchedule4;
 
     @BeforeEach
     void setUp() {
         user = User.builder().id(1L).name("Test User").build();
 
-        lecture = Lecture.builder()
+        lecture1 = Lecture.builder()
             .id(1L)
-            .title("Test Lecture")
-            .teacher("Test Teacher")
+            .title("수학 기초")
+            .teacher("김선생")
+            .build();
+
+        lecture2 = Lecture.builder()
+            .id(2L)
+            .title("영어 문법")
+            .teacher("이선생")
             .build();
 
         lesson1 = Lesson.builder()
             .id(1L)
-            .lecture(lecture)
-            .title("Lesson 1")
+            .lecture(lecture1)
+            .title("1강. 집합")
             .duration(60)
             .order(1)
             .build();
 
         lesson2 = Lesson.builder()
             .id(2L)
-            .lecture(lecture)
-            .title("Lesson 2")
+            .lecture(lecture1)
+            .title("2강. 함수")
             .duration(90)
             .order(2)
             .build();
 
-        plan = Plan.builder()
-            .id(1L)
-            .user(user)
-            .lecture(lecture)
-            .lectureName("Test Lecture")
+        lesson3 = Lesson.builder()
+            .id(3L)
+            .lecture(lecture2)
+            .title("1강. 문장구조")
+            .duration(80)
+            .order(1)
             .build();
 
-        dailySchedule = DailySchedule.builder()
+        lesson4 = Lesson.builder()
+            .id(4L)
+            .lecture(lecture2)
+            .title("2강. 동사")
+            .duration(70)
+            .order(2)
+            .build();
+
+        plan1 = Plan.builder()
             .id(1L)
-            .plan(plan)
+            .user(user)
+            .lecture(lecture1)
+            .lectureName("수학 기초 강의")
+            .build();
+
+        plan2 = Plan.builder()
+            .id(2L)
+            .user(user)
+            .lecture(lecture2)
+            .lectureName("영어 문법 강의")
+            .build();
+
+        dailySchedule1 = DailySchedule.builder()
+            .id(1L)
+            .plan(plan1)
             .date(LocalDate.now())
             .dayOfWeek(DayOfWeek.MON)
             .totalLessons(2)
             .totalDuration(150)
             .build();
 
+        dailySchedule2 = DailySchedule.builder()
+            .id(2L)
+            .plan(plan2)
+            .date(LocalDate.now())
+            .dayOfWeek(DayOfWeek.MON)
+            .totalLessons(1)
+            .totalDuration(80)
+            .build();
+
         lessonSchedule1 = LessonSchedule.builder()
             .id(1L)
-            .dailySchedule(dailySchedule)
+            .dailySchedule(dailySchedule1)
             .lesson(lesson1)
             .adjustedDuration(60)
             .displayOrder(1)
@@ -102,10 +140,28 @@ class ScheduleServiceTest {
 
         lessonSchedule2 = LessonSchedule.builder()
             .id(2L)
-            .dailySchedule(dailySchedule)
+            .dailySchedule(dailySchedule1)
             .lesson(lesson2)
             .adjustedDuration(90)
             .displayOrder(2)
+            .completed(true)
+            .build();
+
+        lessonSchedule3 = LessonSchedule.builder()
+            .id(3L)
+            .dailySchedule(dailySchedule2)
+            .lesson(lesson3)
+            .adjustedDuration(80)
+            .displayOrder(1)
+            .completed(false)
+            .build();
+
+        lessonSchedule4 = LessonSchedule.builder()
+            .id(4L)
+            .dailySchedule(dailySchedule1) // plan1에 속함
+            .lesson(lesson4)
+            .adjustedDuration(70)
+            .displayOrder(3)
             .completed(true)
             .build();
     }
@@ -116,9 +172,9 @@ class ScheduleServiceTest {
         // Given
         LocalDate targetDate = LocalDate.now();
         when(dailyScheduleRepository.findByUserIdAndDate(user.getId(), targetDate))
-            .thenReturn(Arrays.asList(dailySchedule));
+            .thenReturn(Arrays.asList(dailySchedule1, dailySchedule2));
         when(lessonScheduleRepository.findByDailyScheduleIdsWithLessonAndLecture(anyList()))
-            .thenReturn(Arrays.asList(lessonSchedule1, lessonSchedule2));
+            .thenReturn(Arrays.asList(lessonSchedule1, lessonSchedule2, lessonSchedule3));
 
         // When
         DailyScheduleWithLessonsDto result = scheduleService.getUserDailySchedules(user.getId(), targetDate);
@@ -127,9 +183,9 @@ class ScheduleServiceTest {
         assertNotNull(result);
         assertEquals(targetDate, result.getDate());
         assertEquals(DayOfWeek.MON, result.getDayOfWeek());
-        assertEquals(2, result.getTotalLessons());
-        assertEquals(150, result.getTotalDuration());
-        assertEquals(2, result.getLessonSchedules().size());
+        assertEquals(3, result.getTotalLessons());
+        assertEquals(230, result.getTotalDuration()); // 60+90+80
+        assertEquals(3, result.getLessonSchedules().size());
     }
 
     @Test
@@ -148,22 +204,22 @@ class ScheduleServiceTest {
     }
 
     @Test
-    @DisplayName("사용자 진행 상황 조회 성공")
-    void getUserProgress_Success() {
+    @DisplayName("사용자 진행 상황 조회 성공 - 여러 강의")
+    void getUserProgress_MultipleSubjects_Success() {
         // Given
         when(lessonScheduleRepository.findAllByUserIdGroupedByLecture(user.getId()))
-            .thenReturn(Arrays.asList(lessonSchedule1, lessonSchedule2));
+            .thenReturn(Arrays.asList(lessonSchedule1, lessonSchedule2, lessonSchedule3, lessonSchedule4));
 
         // When
         UserProgressDto result = scheduleService.getUserProgress(user.getId());
 
         // Then
         assertNotNull(result);
-        assertEquals(1, result.getTotalCompletedLessons()); // lessonSchedule2만 완료
-        assertEquals(2, result.getTotalLessons());
-        assertEquals(1, result.getLectureProgress().size());
+        assertEquals(2, result.getTotalCompletedLessons()); // lessonSchedule2, lessonSchedule4만 완료
+        assertEquals(4, result.getTotalLessons());
+        assertEquals(2, result.getLectureProgress().size()); // plan1, plan2
 
-        // 완강되지 않은 강의만 포함되어야 함
+        // 진행률이 낮은 순으로 정렬되었는지 확인
         assertTrue(result.getLectureProgress().stream()
             .allMatch(progress -> progress.getCompletedLessons() < progress.getTotalLessons()));
     }
@@ -174,23 +230,32 @@ class ScheduleServiceTest {
         // Given
         lessonSchedule1 = LessonSchedule.builder()
             .id(1L)
-            .dailySchedule(dailySchedule)
+            .dailySchedule(dailySchedule1)
             .lesson(lesson1)
             .adjustedDuration(60)
             .displayOrder(1)
             .completed(true)
             .build();
 
+        lessonSchedule3 = LessonSchedule.builder()
+            .id(3L)
+            .dailySchedule(dailySchedule2)
+            .lesson(lesson3)
+            .adjustedDuration(80)
+            .displayOrder(1)
+            .completed(true)
+            .build();
+
         when(lessonScheduleRepository.findAllByUserIdGroupedByLecture(user.getId()))
-            .thenReturn(Arrays.asList(lessonSchedule1, lessonSchedule2));
+            .thenReturn(Arrays.asList(lessonSchedule1, lessonSchedule2, lessonSchedule3, lessonSchedule4));
 
         // When
         UserProgressDto result = scheduleService.getUserProgress(user.getId());
 
         // Then
         assertNotNull(result);
-        assertEquals(2, result.getTotalCompletedLessons());
-        assertEquals(2, result.getTotalLessons());
+        assertEquals(4, result.getTotalCompletedLessons());
+        assertEquals(4, result.getTotalLessons());
         assertTrue(result.getLectureProgress().isEmpty()); // 완강된 강의는 제외
     }
 
@@ -209,5 +274,101 @@ class ScheduleServiceTest {
         assertEquals(0, result.getTotalCompletedLessons());
         assertEquals(0, result.getTotalLessons());
         assertTrue(result.getLectureProgress().isEmpty());
+    }
+
+    @Test
+    @DisplayName("진행률 정렬 테스트")
+    void getUserProgress_SortByProgressRate() {
+        // Given
+        // plan1: 1/3 완료 (33%), plan2: 0/1 완료 (0%)
+        Plan plan3 = Plan.builder()
+            .id(3L)
+            .user(user)
+            .lecture(lecture1)
+            .lectureName("수학 고급")
+            .build();
+
+        DailySchedule dailySchedule3 = DailySchedule.builder()
+            .id(3L)
+            .plan(plan3)
+            .build();
+
+        LessonSchedule lessonSchedule5 = LessonSchedule.builder()
+            .id(5L)
+            .dailySchedule(dailySchedule3)
+            .lesson(lesson1)
+            .completed(true)
+            .build();
+
+        LessonSchedule lessonSchedule6 = LessonSchedule.builder()
+            .id(6L)
+            .dailySchedule(dailySchedule3)
+            .lesson(lesson2)
+            .completed(false)
+            .build();
+
+        LessonSchedule lessonSchedule7 = LessonSchedule.builder()
+            .id(7L)
+            .dailySchedule(dailySchedule3)
+            .lesson(lesson3)
+            .completed(false)
+            .build();
+
+        when(lessonScheduleRepository.findAllByUserIdGroupedByLecture(user.getId()))
+            .thenReturn(Arrays.asList(
+                lessonSchedule5, lessonSchedule6, lessonSchedule7, // plan3: 33% (1/3)
+                lessonSchedule3 // plan2: 0% (0/1)
+            ));
+
+        // When
+        UserProgressDto result = scheduleService.getUserProgress(user.getId());
+
+        // Then
+        assertEquals(2, result.getLectureProgress().size());
+        // 첫 번째는 진행률이 더 낮은 plan2 (0%)
+        assertEquals(0, result.getLectureProgress().get(0).getCompletedLessons());
+        assertEquals(1, result.getLectureProgress().get(0).getTotalLessons());
+        // 두 번째는 plan3 (33%)
+        assertEquals(1, result.getLectureProgress().get(1).getCompletedLessons());
+        assertEquals(3, result.getLectureProgress().get(1).getTotalLessons());
+    }
+
+    @Test
+    @DisplayName("같은 진행률인 경우 정렬 순서")
+    void getUserProgress_SameProgressRate() {
+        // Given
+        Plan plan3 = Plan.builder()
+            .id(3L)
+            .user(user)
+            .lecture(lecture2)
+            .lectureName("영어 고급")
+            .build();
+
+        DailySchedule dailySchedule3 = DailySchedule.builder()
+            .id(3L)
+            .plan(plan3)
+            .build();
+
+        // 두 계획 모두 0% 진행률
+        LessonSchedule lessonSchedule5 = LessonSchedule.builder()
+            .id(5L)
+            .dailySchedule(dailySchedule3)
+            .lesson(lesson3)
+            .completed(false)
+            .build();
+
+        when(lessonScheduleRepository.findAllByUserIdGroupedByLecture(user.getId()))
+            .thenReturn(Arrays.asList(lessonSchedule3, lessonSchedule5));
+
+        // When
+        UserProgressDto result = scheduleService.getUserProgress(user.getId());
+
+        // Then
+        assertEquals(2, result.getLectureProgress().size());
+        // 모두 0% 진행률이므로 순서는 Plan 순서에 따라
+        result.getLectureProgress().forEach(progress -> {
+            assertEquals(0, progress.getCompletedLessons());
+            assertEquals(1, progress.getTotalLessons());
+        });
     }
 }

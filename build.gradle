@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.3'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
 
 group = 'com'
@@ -61,4 +62,24 @@ sourceSets {
             srcDirs += querydslDir
         }
     }
+}
+
+jacoco {
+    toolVersion = "0.8.8"
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+
+    // 테스트 실행 후 리포트 생성
+    finalizedBy jacocoTestCoverageVerification
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport // 테스트 후 자동으로 리포트 생성
 }
