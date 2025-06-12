@@ -23,6 +23,7 @@ public class PlanDetailResponse {
     private LocalDate endDate;
     private Integer dailyTime;
     private Float playbackSpeed;
+    private Long lectureId;
     private List<DailyScheduleDto> dailySchedules;
 }
 

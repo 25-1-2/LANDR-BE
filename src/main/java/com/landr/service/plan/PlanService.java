@@ -202,6 +202,7 @@ public class PlanService {
             .endDate(plan.getEndDate())
             .dailyTime(plan.getDailyTime())
             .playbackSpeed(plan.getPlaybackSpeed())
+            .lectureId(plan.getLecture().getId())
             .dailySchedules(dailyScheduleDtos)
             .build();
     }
